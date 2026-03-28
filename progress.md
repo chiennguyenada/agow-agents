@@ -78,7 +78,7 @@
 - [x] Create `shared-knowledge/company-rules.md` — 2026-03-28
 - [x] Create `shared-knowledge/product-catalog.md` — 2026-03-28
 - [x] Create `shared-knowledge/lessons-learned.md` (seeded with 6 lessons) — 2026-03-28
-- [ ] Initialize git in `shared-knowledge/` — needs local git init
+- [x] Initialize git at project root (replaces shared-knowledge sub-repo) — 2026-03-28
 - [-] Test: Agent reads company-rules.md — needs Docker running
 
 ### Guardrails Config
@@ -151,7 +151,7 @@ Layer 4 (Regression):  N/A — first creation, no existing code to break
 - [x] Design confidence scoring — documented in plan.md — 2026-03-28
 - [x] Design conflict detection — documented in plan.md — 2026-03-28
 - [x] Configure weekly HOT review schedule in `openclaw.json` — 2026-03-28
-- [!] Git-version memory.md with auto-commit on change — BLOCKED: mounted Windows filesystem doesn't support .git internals, must init on Windows directly
+- [x] Git-version shared-knowledge/ and self-improving/ — git repo at project root `C:\Users\chiennguyen\Documents\agow-agents` — 2026-03-28
 - [-] Test: Conflict detection — needs running system
 - [-] Test: Weekly review — needs running system
 - [-] Test: Git revert — needs running system
@@ -225,15 +225,15 @@ _Tasks to be defined when user provides business requirements_
 | Phase | Total Tasks | Done | Deferred (Docker) | Blocked | Pending |
 |-------|-------------|------|--------------------|---------|---------|
 | Pre   | 8           | 8    | 0                  | 0       | 0       |
-| 1a    | 39          | 25   | 12                 | 0       | 2       |
+| 1a    | 39          | 26   | 12                 | 0       | 1       |
 | 1b    | 10          | 4    | 5                  | 0       | 1       |
-| 1c    | 10          | 5    | 5                  | 1       | 0       |
+| 1c    | 10          | 6    | 4                  | 0       | 0       |
 | 1d    | 11          | 8    | 3                  | 0       | 0       |
 | 1e    | 10          | 9    | 4                  | 0       | 0       |
 | 1f    | 4           | 1    | 2                  | 0       | 1       |
-| **Total** | **92** | **60** | **31**           | **1**   | **3**   |
+| **Total** | **92** | **62** | **30**           | **0**   | **3**   |
 
-> 60/92 tasks done. 31 tasks deferred — require Docker + real API keys.
-> 1 blocked: git init on mounted Windows filesystem (must do on Windows directly).
+> 62/92 tasks done. 30 tasks deferred — require Docker + real API keys.
+> 0 blocked. Git initialized at project root.
 > 3 manual tasks pending: .env Telegram bot token, WP/WC credentials creation, GSC API registration.
 > Update this summary table after each work session.

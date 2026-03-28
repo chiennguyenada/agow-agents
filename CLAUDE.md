@@ -97,4 +97,5 @@ IMPORTANT: Do NOT report "done" until all 4 layers pass. If any test fails, fix 
 - Branch naming: `phase-{number}/{feature-name}` (e.g., `phase-1a/lead-agent-setup`)
 - Commit messages: `[Phase X] verb: description` (e.g., `[Phase 1a] add: Lead Agent AGENTS.md and routing`)
 - NEVER commit `.env` — only `.env.example`
-- Commit `shared-knowledge/` changes separately with clear messages
+- Commit `shared-knowledge/` and `self-improving/` changes separately with clear messages
+- Single git repo at project root (no sub-repos)

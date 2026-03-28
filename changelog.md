@@ -24,6 +24,22 @@
 
 ## Entries
 
+### 2026-03-28 — Git Init at Project Root + Directory Migration
+**Phase**: Infrastructure
+**Files changed**:
+- `.git/` — created — Git repository initialized at `C:\Users\chiennguyen\Documents\agow-agents` (short path, no more "Filename too long" errors)
+- `plan.md` — modified — Removed `.git/` from shared-knowledge/ dir structure, updated backup table and guardrails references to use root git repo
+- `CLAUDE.md` — modified — Added "Single git repo at project root" to Git Conventions
+- `progress.md` — modified — Marked git init done, unblocked Phase 1c guardrails task, updated summary: 62/92 done, 0 blocked
+- `changelog.md` — modified — This entry
+
+**Why**: (1) Moved project from deeply nested Cowork session path to `C:\Users\chiennguyen\Documents\agow-agents` to fix "Filename too long" Windows error. (2) Changed from shared-knowledge sub-repo to single git repo at project root — simpler, tracks all source code + knowledge changes in one place. (3) Agent self-learning changes (hot.md, corrections.md, patterns.md) are now version-controlled via root git, enabling `git diff` to review what agent learned and `git revert` to rollback bad learning.
+**Tests**: Layer 1: N/A (git init) | Layer 2: N/A | Layer 3: DEFERRED | Layer 4: plan.md, CLAUDE.md, progress.md checked for consistency
+**Dependencies affected**: All future commits, backup procedures (git-based backup now covers entire project)
+**Notes**: First commit pending user confirmation. 42 files staged, no sensitive files (.env excluded by .gitignore).
+
+---
+
 ### 2026-03-28 — Self-Improving Memory Seed + GSC Skill
 **Phase**: 1c + 1f
 **Files changed**:

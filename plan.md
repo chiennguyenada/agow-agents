@@ -107,8 +107,7 @@ Lead Agent also serves as "Evolution Coordinator" — self-detects capability ga
     │           ├── wp-daily-check/SKILL.md
     │           └── wp-technical-seo/SKILL.md
     │
-    ├── shared-knowledge/               ← Git-versioned
-    │   ├── .git/
+    ├── shared-knowledge/               ← Tracked by root git repo
     │   ├── company-rules.md
     │   ├── product-catalog.md
     │   └── lessons-learned.md
@@ -201,7 +200,7 @@ Demotion: 30 days unused → WARM, 90 days → COLD/Archive
 | Weekly HOT Review | Export HOT rules to Telegram for human review | Sunday 9:00 AM |
 | Confidence Scoring | Score 0-1 based on usage frequency and recency | Every promote/demote |
 | Conflict Detection | Alert when 2 HOT rules contradict | Real-time |
-| Git Versioning | memory.md committed after every change | Every write |
+| Git Versioning | Changes to shared-knowledge/ and self-improving/ committed to root repo | Every write |
 | Max HOT Limit | Hard cap 50 rules per agent | Heartbeat check |
 | Correction Validation | Require 2+ occurrences before logging as pattern | On detection |
 
@@ -263,7 +262,7 @@ Weekly report: Monday 8:00 AM — tasks completed, errors, patterns learned, API
 | Data | Frequency | Retention | Destination |
 |------|-----------|-----------|-------------|
 | openclaw-home/ (full) | Daily 2:00 AM | 7 daily + 4 weekly | Local + Cloud |
-| shared-knowledge/ (git) | Every write | Full git history | Git remote |
+| agow-agents/ (git) | Every change | Full git history | Git remote |
 | SQLite DB (lcm.db) | Daily 2:00 AM | 7 snapshots | Local + Cloud |
 | .env (secrets) | Manual on change | Encrypted copy | Password manager |
 
