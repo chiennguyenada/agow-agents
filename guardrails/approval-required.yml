@@ -1,0 +1,123 @@
+# Agow Automation — Approval-Required Actions
+# Actions listed here require explicit admin approval via Telegram before execution.
+# This file is loaded at session start by all agents.
+
+version: "1.1"
+
+# --- Role-Based Access Control ---
+# Determines which user roles can trigger which tiers
+role_permissions:
+  admin:
+    allowed_tiers: [1, 2, 3]
+    can_approve_tier3: true
+    can_use_system_commands: true    # STATUS, REPORT, CANCEL
+    description: "Full control"
+  operator:
+    allowed_tiers: [1, 2]
+    can_approve_tier3: false
+    can_use_system_commands: false
+    description: "Staff — can request audits and fixes, cannot approve high-risk changes"
+    tier3_behavior: "request_admin_approval"  # if operator triggers tier3, auto-tag admin for approval
+
+# Tier 3 — Require Approval (send preview, wait for APPROVE/REJECT)
+# NOTE: Only admin can approve. If operator triggers Tier 3, bot sends approval request to admin.
+tier3_actions:
+  - action: modify_robots_txt
+    description: "Any changes to robots.txt"
+    timeout_hours: 24
+    on_timeout: reject
+    notify: true
+
+  - action: change_canonical_url
+    description: "Modify canonical URL on any page"
+    timeout_hours: 24
+    on_timeout: reject
+    notify: true
+
+  - action: delete_content
+    description: "Delete or unpublish any post, page, or product"
+    timeout_hours: 48
+    on_timeout: reject
+    notify: true
+
+  - action: bulk_operation
+    description: "Any write operation affecting >10 pages at once"
+    threshold: 10
+    timeout_hours: 24
+    on_timeout: reject
+    notify: true
+
+  - action: publish_new_content
+    description: "Change post status from draft to publish"
+    timeout_hours: 24
+    on_timeout: reject
+    notify: true
+
+  - action: modify_sitemap_config
+    description: "Change sitemap inclusion/exclusion rules"
+    timeout_hours: 24
+    on_timeout: reject
+    notify: true
+
+  - action: deploy_new_capability
+    description: "Deploy a self-built capability from sandbox to production"
+    timeout_hours: 48
+    on_timeout: reject
+    notify: true
+
+# Tier 2 — Notify-Then-Do (execute, then send notification with undo option)
+tier2_actions:
+  - action: update_meta_title
+    description: "Update RankMath SEO title"
+    undo_window_hours: 4
+
+  - action: update_meta_description
+    description: "Update RankMath meta description"
+    undo_window_hours: 4
+
+  - action: fix_alt_text
+    description: "Add or update image alt text"
+    undo_window_hours: 4
+
+  - action: add_schema_markup
+    description: "Add or update JSON-LD structured data"
+    undo_window_hours: 4
+
+  - action: fix_h1_tag
+    description: "Fix missing or duplicate H1 tags"
+    undo_window_hours: 4
+
+  - action: update_focus_keyword
+    description: "Update RankMath focus keyword"
+    undo_window_hours: 4
+
+  - action: expand_content
+    description: "Expand thin content on existing page"
+    undo_window_hours: 24
+
+  - action: add_internal_links
+    description: "Add internal links to orphaned pages"
+    undo_window_hours: 4
+
+# Tier 1 — Auto-Execute (no approval, no notification)
+tier1_actions:
+  - action: read_any_endpoint
+    description: "GET request to any allowed API endpoint"
+
+  - action: crawl_urls
+    description: "Crawl and parse website URLs"
+
+  - action: generate_audit_report
+    description: "Generate SEO audit report"
+
+  - action: calculate_scores
+    description: "Calculate SEO scores for pages"
+
+  - action: analyze_content_quality
+    description: "Analyze content quality without making changes"
+
+  - action: generate_recommendations
+    description: "Generate fix recommendations without applying"
+
+  - action: send_daily_report
+    description: "Send daily/weekly summary report via Telegram"

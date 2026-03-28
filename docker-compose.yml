@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  openclaw:
+    image: ghcr.io/anthropics/openclaw:latest
+    container_name: agow-openclaw
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18789:18789"
+    volumes:
+      - ./openclaw-home:/home/openclaw
+      - ./workspaces:/home/openclaw/workspaces:ro
+      - ./shared-knowledge:/home/openclaw/shared-knowledge
+      - ./guardrails:/home/openclaw/guardrails:ro
+      - ./scripts:/home/openclaw/scripts:ro
+      - ./monitoring:/home/openclaw/monitoring:ro
+    env_file:
+      - .env
+    environment:
+      - OPENCLAW_CONFIG=/home/openclaw/openclaw.json
+      - OPENCLAW_PORT=18789
+      - TZ=Asia/Ho_Chi_Minh
+    mem_limit: 2g
+    memswap_limit: 2g
+    cpus: 1.5
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:size=256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - agow-net
+
+networks:
+  agow-net:
+    driver: bridge
+    internal: false

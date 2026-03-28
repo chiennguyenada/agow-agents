@@ -1,0 +1,66 @@
+# Agow Automation — Rate Limits Configuration
+# Enforced by all agents. Exceeding limits triggers automatic throttle + alert.
+
+version: "1.0"
+
+api_limits:
+  wordpress_rest:
+    writes_per_hour: 30
+    reads_per_minute: 60
+    burst_limit: 10          # max writes in 1 minute
+    cooldown_seconds: 60     # pause after burst limit hit
+    retry_on_429: true
+    retry_backoff: exponential  # 2s, 4s, 8s, 16s, 32s (max)
+    max_retries: 5
+
+  woocommerce_rest:
+    writes_per_hour: 20
+    reads_per_minute: 40
+    burst_limit: 5
+    cooldown_seconds: 60
+    retry_on_429: true
+    retry_backoff: exponential
+    max_retries: 5
+
+  anthropic_api:
+    calls_per_hour: 100
+    tokens_per_day: 500000   # rough daily budget
+    cost_alert_daily: 1.00   # alert admin if daily cost exceeds $1
+    cost_hard_limit_daily: 5.00  # stop all non-critical operations
+
+  google_search_console:
+    queries_per_day: 200
+    cooldown_seconds: 5      # between requests
+
+  telegram_bot:
+    messages_per_minute: 10
+    messages_per_hour: 100
+    max_message_length: 4096
+
+session_limits:
+  max_concurrent_sessions: 5
+  session_idle_timeout_minutes: 90
+  max_session_duration_minutes: 240
+
+content_limits:
+  max_pages_per_audit: 1000
+  max_fixes_per_daily_run: 10        # meta fixes
+  max_content_expansions_per_day: 3  # content gen is expensive
+  max_bulk_operation_size: 50        # with Tier 3 approval
+
+alerts:
+  on_rate_limit_hit:
+    action: log_and_slow_down
+    notify_admin: false              # too noisy for normal throttling
+
+  on_burst_limit_hit:
+    action: pause_and_notify
+    notify_admin: true
+
+  on_cost_alert:
+    action: notify_admin
+    message: "Chi phí API hôm nay đã vượt ${cost_alert_daily}. Kiểm tra?"
+
+  on_cost_hard_limit:
+    action: pause_non_critical_and_alert
+    message: "CẢNH BÁO: Chi phí đạt ${cost_hard_limit_daily}. Đã tạm dừng."

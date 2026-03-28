@@ -1,0 +1,33 @@
+# Secrets - NEVER commit
+.env
+secrets/
+*.key
+*.pem
+
+# Runtime data
+openclaw-home/
+backups/
+*.db
+*.db-journal
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# Temp
+tmp/
+*.tmp
+workspaces/lead/sandbox/*
+!workspaces/lead/sandbox/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

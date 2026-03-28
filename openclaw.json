@@ -1,0 +1,172 @@
+{
+  "$schema": "https://openclaw.ai/schema/config.json",
+  "version": "1.0",
+  "project": {
+    "name": "Agow Automation",
+    "description": "Multi-agent AI system for B&R Automation distributor in Vietnam",
+    "language": "vi",
+    "timezone": "Asia/Ho_Chi_Minh"
+  },
+
+  "agents": [
+    {
+      "id": "lead",
+      "name": "Lead Agent",
+      "workspace": "workspaces/lead",
+      "model": "${PRIMARY_MODEL}",
+      "description": "Smart router for ambiguous requests, monitor, capability evolution coordinator",
+      "allowedChannels": ["telegram"],
+      "maxConcurrentSessions": 3,
+      "sessionTimeout": 90
+    },
+    {
+      "id": "seo",
+      "name": "Khoa - SEO Agent",
+      "workspace": "workspaces/seo",
+      "model": "${SECONDARY_MODEL}",
+      "description": "SEO specialist - audits, content creation, technical SEO, daily monitoring",
+      "allowedChannels": ["telegram"],
+      "maxConcurrentSessions": 2,
+      "sessionTimeout": 60
+    }
+  ],
+
+  "channels": {
+    "telegram": {
+      "type": "telegram",
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "chatMode": "group",
+      "groupChatId": "${TELEGRAM_GROUP_CHAT_ID}",
+      "privacyMode": false,
+      "defaultAgent": "lead",
+      "authorization": {
+        "admin": ["${TELEGRAM_ADMIN_USER_ID}"],
+        "operators": "${TELEGRAM_OPERATOR_USER_IDS}",
+        "roles": {
+          "admin": {
+            "description": "Full control — all tiers, all agents, all commands",
+            "allowedTiers": [1, 2, 3],
+            "canApprove": true,
+            "canCancel": true
+          },
+          "operator": {
+            "description": "Can request Tier 1 and Tier 2 actions, cannot approve Tier 3",
+            "allowedTiers": [1, 2],
+            "canApprove": false,
+            "canCancel": false
+          }
+        },
+        "unauthorizedBehavior": "ignore"
+      },
+      "routing": {
+        "mode": "hybrid",
+        "tagPrefix": "@",
+        "directTags": {
+          "@khoa": "seo",
+          "@seo": "seo",
+          "@lead": "lead"
+        },
+        "fallback": "lead",
+        "contextAware": {
+          "enabled": true,
+          "description": "Bot reads all messages, proactively suggests when relevant context detected",
+          "triggerKeywords": {
+            "seo": ["SEO", "website", "ranking", "meta", "audit", "content", "Google"],
+            "lead": ["status", "báo cáo", "report", "hệ thống"]
+          },
+          "proactiveBehavior": "suggest_only",
+          "proactivePrefix": "💡 Gợi ý: "
+        }
+      },
+      "rateLimits": {
+        "messagesPerMinute": 10,
+        "sessionsPerHour": 20
+      }
+    }
+  },
+
+  "plugins": {
+    "lossless-claw": {
+      "enabled": false,
+      "config": {
+        "freshTailCount": 32,
+        "contextThreshold": 0.75,
+        "ignoreSessionPatterns": ["cron-*", "health-*"]
+      }
+    },
+    "self-improving": {
+      "enabled": false,
+      "config": {
+        "hotRulesMax": 50,
+        "promotionThreshold": 3,
+        "promotionWindow": "7d",
+        "demotionThreshold": "30d",
+        "weeklyReviewDay": "sunday",
+        "weeklyReviewHour": 9
+      }
+    }
+  },
+
+  "sharedKnowledge": {
+    "path": "shared-knowledge",
+    "gitVersioned": true,
+    "files": [
+      "company-rules.md",
+      "product-catalog.md",
+      "lessons-learned.md"
+    ]
+  },
+
+  "guardrails": {
+    "path": "guardrails",
+    "approvalRequired": "guardrails/approval-required.yml",
+    "rateLimits": "guardrails/rate-limits.yml"
+  },
+
+  "scheduling": {
+    "dailySEOCheck": {
+      "cron": "0 6 * * *",
+      "agent": "seo",
+      "skill": "wp-daily-check",
+      "description": "Daily SEO health check at 6:00 AM"
+    },
+    "weeklyReport": {
+      "cron": "0 8 * * 1",
+      "agent": "lead",
+      "skill": "task-router",
+      "args": {"action": "weekly-report"},
+      "description": "Weekly summary report on Monday 8:00 AM"
+    }
+  },
+
+  "security": {
+    "apiKeyScoping": {
+      "wordpress": {
+        "scope": ["posts", "pages", "media", "categories", "tags"],
+        "denyScope": ["users", "settings", "plugins", "themes"]
+      },
+      "woocommerce": {
+        "scope": ["products"],
+        "denyScope": ["orders", "customers", "coupons", "settings"]
+      }
+    },
+    "httpsOnly": true,
+    "maxRetries": 3,
+    "retryBackoff": "exponential"
+  },
+
+  "monitoring": {
+    "healthCheckInterval": "15m",
+    "alertChannel": "telegram",
+    "metrics": [
+      "container_status",
+      "memory_usage",
+      "disk_usage",
+      "api_errors_per_hour",
+      "session_count",
+      "backup_age",
+      "sqlite_size",
+      "last_successful_run"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+# =============================================================
+# Agow Automation — Crontab Configuration
+# Install: crontab scripts/crontab.txt
+# All times in Asia/Ho_Chi_Minh (server TZ must be set)
+# =============================================================
+
+# Environment
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+OPENCLAW_HOME=/home/openclaw
+
+# --- Daily ---
+
+# Daily SEO check at 6:00 AM
+0 6 * * * curl -sf http://localhost:18789/api/trigger/daily-seo-check >> /home/openclaw/monitoring/cron.log 2>&1
+
+# Daily backup at 2:00 AM
+0 2 * * * /home/openclaw/scripts/backup.sh >> /home/openclaw/monitoring/backup.log 2>&1
+
+# --- Every 15 minutes ---
+
+# Health check
+*/15 * * * * /home/openclaw/monitoring/health-check.sh >> /home/openclaw/monitoring/health.log 2>&1
+
+# --- Weekly ---
+
+# Weekly report Monday 8:00 AM
+0 8 * * 1 curl -sf http://localhost:18789/api/trigger/weekly-report >> /home/openclaw/monitoring/cron.log 2>&1
+
+# Weekly HOT rules review Sunday 9:00 AM
+0 9 * * 0 curl -sf http://localhost:18789/api/trigger/hot-review >> /home/openclaw/monitoring/cron.log 2>&1
+
+# Log rotation Sunday 3:00 AM
+0 3 * * 0 /home/openclaw/scripts/log-rotation.sh >> /home/openclaw/monitoring/rotation.log 2>&1
+
+# DB vacuum Sunday 4:00 AM
+0 4 * * 0 /home/openclaw/scripts/db-vacuum.sh >> /home/openclaw/monitoring/vacuum.log 2>&1

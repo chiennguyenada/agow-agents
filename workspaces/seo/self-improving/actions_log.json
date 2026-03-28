@@ -1,0 +1,5 @@
+{
+  "description": "Log of all agent actions for self-improving analysis",
+  "format": "Each entry: {timestamp, action, tier, url, result, cost_usd, model}",
+  "entries": []
+}
