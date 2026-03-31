@@ -97,15 +97,32 @@ Cách kiểm tra duplicate alt đúng:
 
 ### DUPLICATE_ALT (ảnh trùng alt trên cùng 1 trang)
 ```
-Phương pháp phát hiện:
-1. Posts/Pages: Fetch content.rendered → regex <img alt="..."> → đếm per-page
-2. WC Products: GET /wp-json/wc/v3/products/{id}?_fields=images → kiểm tra images[].alt
+Phương pháp phát hiện — PHẢI THEO ĐÚNG THỨ TỰ NÀY:
 
-Cách sửa:
-- Ảnh chụp góc khác nhau cùng sản phẩm: thêm hậu tố mô tả
-  Ví dụ: "PLC X20CP3583" x2 → "PLC X20CP3583 mặt trước" + "PLC X20CP3583 kết nối"
-- Ảnh thumbnail trùng ảnh gallery: sửa ảnh phụ, giữ ảnh chính
-- Tối đa 1 lần sửa per product để tránh lỗi hàng loạt
+1. Posts/Pages — dùng content.rendered (KHÔNG dùng _links.wp:featuredmedia):
+   GET /wp-json/wp/v2/pages?per_page=100&_fields=id,title,link,content
+   GET /wp-json/wp/v2/posts?per_page=100&_fields=id,title,link,content
+   → Với mỗi page/post: parse content.rendered bằng regex <img[^>]+alt="([^"]*)"
+   → Đếm tần suất mỗi alt text TRONG CÙNG 1 TRANG
+   → Báo lỗi nếu bất kỳ alt text nào xuất hiện >= 2 lần
+
+   ⚠️ KHÔNG dùng _links.wp:featuredmedia để check duplicate:
+   _links chỉ cho biết featured image, KHÔNG bao gồm ảnh trong content.
+   Trang Chủ ví dụ: có 117 ảnh trong content.rendered, không có featured media link.
+
+2. WC Products — dùng images[] từ WC API:
+   GET /wp-json/wc/v3/products?per_page=100&_fields=id,name,permalink,images
+   → Với mỗi product: kiểm tra images[].alt, đếm duplicate trong mảng đó
+
+3. Phân loại khi phát hiện duplicate:
+   - Cùng 1 ảnh (same src/id) dùng 2 lần → "bình thường", không cần sửa
+   - 2 ảnh KHÁC NHAU cùng alt text → LỖI THỰC SỰ, cần sửa
+
+Cách sửa ảnh lỗi thực sự:
+   - Ảnh chụp góc khác nhau cùng sản phẩm: thêm hậu tố mô tả
+     Ví dụ: "PLC X20CP3583" x2 → "PLC X20CP3583 mặt trước" + "PLC X20CP3583 kết nối"
+   - Ảnh minh họa trùng nhau: mô tả cụ thể hơn nội dung từng ảnh
+   - Giữ ảnh chính (index 0), sửa ảnh phụ (index 1+)
 ```
 
 ### NO_SCHEMA
