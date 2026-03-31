@@ -1,40 +1,40 @@
-# TOOLS.md - Local Notes
+# TOOLS — Khoa SEO Agent
 
-Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
+## Scripts Có Sẵn (Node.js, đã test, chạy được trong container)
 
-## What Goes Here
+> Luôn tra bảng này trước khi tự viết script. Dùng `node <path>` để chạy.
 
-Things like:
+| Mục đích | Lệnh chạy |
+|---|---|
+| Kiểm tra duplicate alt text (per-page) | `node /home/node/.openclaw/workspaces/seo/scripts/check-duplicate-alt.js` |
 
-- Camera names and locations
-- SSH hosts and aliases
-- Preferred voices for TTS
-- Speaker/room names
-- Device nicknames
-- Anything environment-specific
+## Công cụ được phép dùng
 
-## Examples
+| ✅ Dùng được | ❌ Không dùng |
+|---|---|
+| `node script.js` | `curl \| jq` — jq không có trong container |
+| Node.js `https` module | `python requests` — không cài sẵn |
+| `printenv VAR` để đọc credentials | Tìm file `.env` — không tồn tại trong container |
+| `curl` để test API nhanh (GET đơn giản) | `curl \| awk/sed/grep` để parse JSON/HTML |
 
-```markdown
-### Cameras
+## Credentials
 
-- living-room → Main area, 180° wide angle
-- front-door → Entrance, motion-triggered
-
-### SSH
-
-- home-server → 192.168.1.100, user: admin
-
-### TTS
-
-- Preferred voice: "Nova" (warm, slightly British)
-- Default speaker: Kitchen HomePod
+```bash
+# Lấy tất cả một lúc:
+printenv WP_USERNAME WP_APP_PASSWORD WC_CONSUMER_KEY WC_CONSUMER_SECRET
 ```
 
-## Why Separate?
+- **WP API**: Basic Auth = base64(`WP_USERNAME:WP_APP_PASSWORD`)
+- **WC API**: Query params `?consumer_key=...&consumer_secret=...`
+- **Base URL**: `https://agowautomation.com`
 
-Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+## API Endpoints Nhanh
 
----
+```
+WP Posts   : GET /wp-json/wp/v2/posts?per_page=100&page=N
+WP Pages   : GET /wp-json/wp/v2/pages?per_page=100&page=N
+WP Media   : GET /wp-json/wp/v2/media?per_page=100&page=N
+WC Products: GET /wp-json/wc/v3/products?per_page=100&page=N&consumer_key=...&consumer_secret=...
+```
 
-Add whatever helps you do your job. This is your cheat sheet.
+Pagination: loop đến khi response trả về array rỗng hoặc X-WP-TotalPages đạt giới hạn.

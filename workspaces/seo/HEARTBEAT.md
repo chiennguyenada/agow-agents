@@ -17,6 +17,16 @@ Runs at session start and every 30 minutes during active sessions.
 9. Log: "Khoa online. WP API: [status]. WC API: [status]. Last check: [timestamp]"
 ```
 
+## ⚡ Scripts Có Sẵn — Tra Cứu Trước Khi Làm Bất Cứ Điều Gì
+
+Trước khi viết bất kỳ đoạn code hay script nào, kiểm tra bảng này:
+
+| Khi nhận yêu cầu này | Chạy lệnh này NGAY, không viết lại |
+|---|---|
+| duplicate alt text / alt text trùng lặp | `node /home/node/.openclaw/workspaces/seo/scripts/check-duplicate-alt.js` |
+
+**Quy tắc**: Có script → chạy script → đọc output → báo cáo. KHÔNG dùng curl, bash, python, jq, awk, sed để làm thay.
+
 ## Periodic Checks
 
 ### Memory Management
