@@ -75,13 +75,37 @@ Two scenarios:
 
 ### MISSING_ALT
 ```
-1. List all images without alt text
+1. List all images without alt text via WP REST API:
+   GET /wp-json/wp/v2/media?per_page=100&_fields=id,alt_text,source_url
 2. For each image:
    a. Analyze image context (surrounding text, page topic)
-   b. Generate descriptive alt text (5-15 words)
-   c. CRITICAL: Check for duplicate alt text — no two images on same page should have identical alt
-   d. PUT /wp-json/wp/v2/media/{id} with { "alt_text": "..." }
+   b. Generate descriptive alt text (5-15 words, include product model/name)
+   c. PUT /wp-json/wp/v2/media/{id} with { "alt_text": "..." }
 3. Purge cache + verify
+
+CRITICAL — ĐÚNG ĐỊNH NGHĨA DUPLICATE ALT:
+- Duplicate alt text CHỈ là vấn đề khi nhiều ảnh có cùng alt text TRÊN CÙNG MỘT TRANG
+- Duplicate alt text KHÁC TRANG → KHÔNG phải lỗi (bình thường với product catalog)
+- ĐỪNG report duplicate dựa trên media library toàn site — phải check per-page
+
+Cách kiểm tra duplicate alt đúng:
+  a. Fetch nội dung từng trang (HTML rendered)
+  b. Extract tất cả <img alt="..."> trên trang đó
+  c. Tìm alt text xuất hiện >= 2 lần TRONG CÙNG TRANG ĐÓ
+  d. Chỉ report/fix những trang đó
+```
+
+### DUPLICATE_ALT (ảnh trùng alt trên cùng 1 trang)
+```
+Phương pháp phát hiện:
+1. Posts/Pages: Fetch content.rendered → regex <img alt="..."> → đếm per-page
+2. WC Products: GET /wp-json/wc/v3/products/{id}?_fields=images → kiểm tra images[].alt
+
+Cách sửa:
+- Ảnh chụp góc khác nhau cùng sản phẩm: thêm hậu tố mô tả
+  Ví dụ: "PLC X20CP3583" x2 → "PLC X20CP3583 mặt trước" + "PLC X20CP3583 kết nối"
+- Ảnh thumbnail trùng ảnh gallery: sửa ảnh phụ, giữ ảnh chính
+- Tối đa 1 lần sửa per product để tránh lỗi hàng loạt
 ```
 
 ### NO_SCHEMA

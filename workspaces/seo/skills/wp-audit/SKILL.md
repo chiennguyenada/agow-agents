@@ -42,6 +42,7 @@ For each URL, fetch HTML and extract:
 | Single H1 | `<h1>` count | 5 | MULTIPLE_H1 |
 | Content word count > 300 | Body text | 15 | THIN_CONTENT |
 | Images have alt text | `<img alt="">` | 10 | MISSING_ALT |
+| Duplicate alt on SAME page | `<img alt="">` per page | 5 | DUPLICATE_ALT |
 | Schema markup exists | `<script type="application/ld+json">` | 5 | NO_SCHEMA |
 | Canonical URL set | `<link rel="canonical">` | 5 | NO_CANONICAL |
 | Focus keyword in title | RankMath meta | 5 | NO_FOCUS_KEYWORD |
