@@ -8,9 +8,48 @@
     "timezone": "Asia/Ho_Chi_Minh"
   },
 
+  "models": {
+    "providers": {
+      "claudible": {
+        "baseUrl": "https://claudible.io/v1",
+        "apiKey": "${CLAUDIBLE_API_KEY}",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "claude-sonnet-4.6",
+            "name": "Claude Sonnet 4.6",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          },
+          {
+            "id": "claude-haiku-4.5",
+            "name": "Claude Haiku 4.5",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          },
+          {
+            "id": "claude-opus-4.6",
+            "name": "Claude Opus 4.6",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          }
+        ]
+      }
+    }
+  },
+
   "agents": {
     "defaults": {
-      "model": { "primary": "${PRIMARY_MODEL}" },
+      "model": { "primary": "claudible/claude-sonnet-4.6" },
       "compaction": { "mode": "safeguard" },
       "maxConcurrent": 3
     },
