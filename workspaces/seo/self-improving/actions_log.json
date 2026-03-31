@@ -12,13 +12,54 @@
         "pages_scanned": 617,
         "pages_with_issues": 3,
         "details": [
-          {"id": 2, "url": "/", "name": "Trang Chủ", "duplicate_groups": 15},
-          {"id": 3789, "url": "/bo-dieu-khien-lap-trinh-plc-x20cp3583", "duplicate_groups": 1},
-          {"id": 3738, "url": "/bo-dieu-khien-lap-trinh-plc-mx207", "duplicate_groups": 1}
+          {
+            "id": 2,
+            "url": "/",
+            "name": "Trang Chủ",
+            "duplicate_groups": 15
+          },
+          {
+            "id": 3789,
+            "url": "/bo-dieu-khien-lap-trinh-plc-x20cp3583",
+            "duplicate_groups": 1
+          },
+          {
+            "id": 3738,
+            "url": "/bo-dieu-khien-lap-trinh-plc-mx207",
+            "duplicate_groups": 1
+          }
         ]
       },
       "fix_status": "pending_approval",
       "notes": "Reported to user 2026-03-31 17:21. Awaiting approval to fix."
+    },
+    {
+      "timestamp": "2026-03-31T13:27:10.929Z",
+      "skill": "wp-technical-seo",
+      "action": "fix-duplicate-alt",
+      "tier": 2,
+      "result": "success",
+      "summary": {
+        "items_fixed": 3,
+        "alts_fixed": 23
+      },
+      "details": [
+        {
+          "type": "PRODUCT",
+          "id": 3789,
+          "fixes_count": 1
+        },
+        {
+          "type": "PRODUCT",
+          "id": 3738,
+          "fixes_count": 1
+        },
+        {
+          "type": "PAGE",
+          "id": 2,
+          "fixes_count": 21
+        }
+      ]
     }
   ]
 }

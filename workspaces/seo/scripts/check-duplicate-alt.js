@@ -43,24 +43,39 @@ function get(url, extraHeaders = {}) {
   });
 }
 
-// ── Extract img alts từ HTML content.rendered ─────────────────────────────────
+// ── Extract img alts + srcs từ HTML content.rendered ─────────────────────────
 function extractAlts(html) {
   if (!html) return [];
-  const alts = [];
-  const re = /<img[^>]+alt=["']([^"']*)["'][^>]*>/gi;
+  const imgs = [];
+  const re = /<img[^>]+>/gi;
   let m;
   while ((m = re.exec(html)) !== null) {
-    const alt = m[1].trim();
-    if (alt) alts.push(alt);
+    const tag = m[0];
+    const altM = tag.match(/alt=["']([^"']*)["']/i);
+    const srcM = tag.match(/src=["']([^"']+)["']/i);
+    const alt = altM ? altM[1].trim() : '';
+    const src = srcM ? srcM[1].trim() : '';
+    if (alt) imgs.push({ alt, src });
   }
-  return alts;
+  return imgs;
 }
 
-// ── Tìm duplicate trong mảng alts ─────────────────────────────────────────────
-function findDupes(alts) {
-  const count = {};
-  alts.forEach(a => { count[a] = (count[a] || 0) + 1; });
-  return Object.entries(count).filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]);
+// ── Tìm duplicate trong mảng imgs (chỉ count khi SRC khác nhau) ────────────────
+function findDupes(imgs) {
+  // Group by alt
+  const byAlt = {};
+  imgs.forEach(({ alt, src }) => {
+    if (!byAlt[alt]) byAlt[alt] = [];
+    byAlt[alt].push(src);
+  });
+  // Chỉ báo lỗi khi có ít nhất 2 SRC khác nhau cùng alt (không count same-src reuse)
+  return Object.entries(byAlt)
+    .filter(([, srcs]) => {
+      const uniqueSrcs = new Set(srcs.map(s => s.split('?')[0])); // bỏ query string
+      return uniqueSrcs.size >= 2;
+    })
+    .map(([alt, srcs]) => [alt, srcs.length])
+    .sort((a, b) => b[1] - a[1]);
 }
 
 // ── Fetch tất cả pages (có pagination) ────────────────────────────────────────
@@ -88,27 +103,28 @@ async function main() {
   process.stderr.write('Scanning posts...\n');
   const posts = await fetchAll('/wp-json/wp/v2/posts', 'id,title,link,content');
   posts.forEach(post => {
-    const alts = extractAlts(post.content && post.content.rendered);
-    const dupes = findDupes(alts);
+    const imgs = extractAlts(post.content && post.content.rendered);
+    const dupes = findDupes(imgs);
     if (dupes.length) problems.push({ type: 'POST', id: post.id, title: post.title.rendered, url: post.link, dupes });
   });
 
-  // 2. PAGES — PHẢI dùng content.rendered, KHÔNG dùng _links.wp:featuredmedia
+  // 2. PAGES — dùng content.rendered, lọc same-src reuse (Flatsome widget)
   process.stderr.write('Scanning pages...\n');
   const pages = await fetchAll('/wp-json/wp/v2/pages', 'id,title,link,content');
   pages.forEach(page => {
-    const alts = extractAlts(page.content && page.content.rendered);
-    const dupes = findDupes(alts);
+    const imgs = extractAlts(page.content && page.content.rendered);
+    const dupes = findDupes(imgs);
     if (dupes.length) problems.push({ type: 'PAGE', id: page.id, title: page.title.rendered, url: page.link, dupes });
   });
 
-  // 3. WC PRODUCTS — dùng images[] từ WC API
+  // 3. WC PRODUCTS — dùng images[] từ WC API (images khác nhau = src khác nhau)
   process.stderr.write('Scanning WC products...\n');
   const products = await fetchAll('/wp-json/wc/v3/products', 'id,name,permalink,images', true);
   products.forEach(prod => {
     if (!prod.images || prod.images.length < 2) return;
-    const alts = prod.images.map(img => (img.alt || '').trim()).filter(Boolean);
-    const dupes = findDupes(alts);
+    // Convert WC images[] sang format {alt, src} để dùng chung findDupes
+    const imgs = prod.images.map(img => ({ alt: (img.alt || '').trim(), src: img.src || '' })).filter(i => i.alt);
+    const dupes = findDupes(imgs);
     if (dupes.length) problems.push({ type: 'PRODUCT', id: prod.id, title: prod.name, url: prod.permalink, dupes });
   });
 

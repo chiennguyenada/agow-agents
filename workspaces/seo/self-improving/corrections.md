@@ -2,7 +2,20 @@
 <!-- Admin feedback → agent learns to avoid repeating mistakes -->
 <!-- Format: date, task, mistake, correction, reason -->
 
-## 2026-03-31 — Duplicate Alt Text: Sai Cách Kiểm Tra
+## 2026-03-31 — Duplicate Alt Fix: 2 Edge Cases
+
+### Edge Case 1: WC Product có 2 ảnh cùng media ID
+- **Tình huống**: Product 3789 (X20CP3583) — image `3790` là gallery image, image `3790` cũng là featured image → cùng media ID
+- **Vấn đề**: Sửa alt text qua `/wp-json/wp/v2/media/3790` chỉ đổi 1 record → cả 2 chỗ hiển thị vẫn cùng alt sau khi sửa
+- **Đúng**: WC product với 2+ ảnh cùng media ID không thể sửa bằng media endpoint. Cần kiểm tra xem featured image và gallery image có thực sự là cùng 1 file hay không. Nếu đúng → mark as CANNOT_FIX (same image used twice), không phải lỗi Google penalize.
+
+### Edge Case 2: Flatsome Page Builder — cùng ảnh xuất hiện nhiều lần
+- **Tình huống**: Trang Chủ — cùng 1 ảnh `module-nguon-24vdc-3ps465-9.jpg` xuất hiện 2+ lần trong các section khác nhau của Flatsome
+- **Vấn đề**: Suffix logic (`- mặt sau`, `- chi tiết kết nối`) chỉ phân biệt được 2-3 lần. Nếu cùng ảnh xuất hiện 4 lần → sau fix vẫn có 2 cùng suffix
+- **Nguyên tắc**: Cùng ảnh (cùng src URL) xuất hiện nhiều lần trên 1 trang = Page Builder reuse, không phải lỗi SEO thật. Google không penalize vì đây cùng 1 file. Chỉ cần flag INFORMATIONAL, không cần fix.
+- **Action**: Bỏ qua Trang Chủ trong check-duplicate-alt nếu src URL trùng nhau (chỉ count duplicate ALT khi SRC khác nhau).
+
+
 - **Task**: Kiểm tra duplicate alt text
 - **Lỗi**: Query `/wp-json/wp/v2/media` (media library) → báo 40 duplicates "cross-site" không phải lỗi thực
 - **Lỗi tiếp**: Dùng Python script parse /tmp/products.json (chỉ 100 products) → báo "0 duplicate" sai

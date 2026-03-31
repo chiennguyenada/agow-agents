@@ -22,6 +22,10 @@ const COMMANDS = {
     script: 'check-duplicate-alt.js',
     desc: 'Tìm duplicate alt text trên cùng 1 trang (posts + pages + all products)',
   },
+  'fix-duplicate-alt': {
+    script: 'fix-duplicate-alt.js',
+    desc: 'Sửa duplicate alt text. Thêm --apply để ghi thật, --id=N để fix 1 item',
+  },
   'missing-alt': {
     script: 'missing-alt.js',
     desc: 'Tìm ảnh chưa có alt text',
