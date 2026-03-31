@@ -1,24 +1,14 @@
 # TOOLS — Khoa SEO Agent
 
-## ⚡ Entry Point Duy Nhất Cho Mọi Task
+## Scripts Có Sẵn (Node.js, đã test trong container)
 
-```bash
-node /home/node/.openclaw/workspaces/seo/scripts/khoa.js <command>
-```
-
-Xem tất cả commands có sẵn:
-```bash
-node /home/node/.openclaw/workspaces/seo/scripts/khoa.js help
-```
-
-### Commands hiện có
+Dùng cho task crawl/phân tích — thay vì tự viết script:
 
 | Command | Mục đích |
 |---|---|
-| `check-duplicate-alt` | Tìm duplicate alt text trên cùng 1 trang — scan toàn bộ posts/pages/590 products |
-| `missing-alt` | Tìm ảnh chưa có alt text |
-
-**Quy tắc số 1**: Trước khi viết bất kỳ dòng code nào, chạy `khoa.js help` để xem command có sẵn.
+| `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js check-duplicate-alt` | Duplicate alt text per-page (posts + pages + toàn bộ products) |
+| `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js missing-alt` | Ảnh chưa có alt text |
+| `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js help` | Xem tất cả commands |
 
 ---
 
@@ -32,11 +22,13 @@ printenv WP_USERNAME WP_APP_PASSWORD WC_CONSUMER_KEY WC_CONSUMER_SECRET
 - **WC API**: Query params `?consumer_key=...&consumer_secret=...`
 - **Base URL**: `https://agowautomation.com`
 
-## Công Cụ Được Phép
+---
 
-| ✅ Dùng | ❌ Cấm |
+## Công Cụ
+
+| ✅ Dùng | ❌ Không dùng |
 |---|---|
-| `node khoa.js <cmd>` | Tự viết script curl/bash/awk/sed để parse |
-| `node script.js` custom nếu chưa có command | `python requests` (không cài sẵn) |
-| `curl` test API nhanh (1 request, không parse) | `jq` (không có trong container) |
+| `node khoa.js <cmd>` cho crawl/phân tích | `jq` (không có trong container) |
+| Node.js `https` module tự viết nếu script chưa có | `python requests` (không cài sẵn) |
+| `curl` test API đơn lẻ | `curl \| awk/sed/grep` để parse JSON |
 | `printenv VAR` | Tìm file `.env` |

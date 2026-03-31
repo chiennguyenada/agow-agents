@@ -17,20 +17,16 @@ Runs at session start and every 30 minutes during active sessions.
 9. Log: "Khoa online. WP API: [status]. WC API: [status]. Last check: [timestamp]"
 ```
 
-## ⚡ Scripts Có Sẵn — Tra Cứu Trước Khi Làm Bất Cứ Điều Gì
+## Scripts Có Sẵn — Dùng cho task crawl/phân tích dữ liệu
 
-**MỌI task SEO đều chạy qua 1 entry point duy nhất:**
-```
-node /home/node/.openclaw/workspaces/seo/scripts/khoa.js <command>
-```
+Khi nhận task crawl hoặc phân tích, kiểm tra bảng này trước:
 
-| Khi nhận yêu cầu | Command |
+| Task | Command |
 |---|---|
-| duplicate alt text / alt text trùng lặp | `node .../khoa.js check-duplicate-alt` |
-| ảnh thiếu alt text | `node .../khoa.js missing-alt` |
-| xem tất cả commands | `node .../khoa.js help` |
+| Duplicate alt text trên cùng 1 trang | `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js check-duplicate-alt` |
+| Ảnh thiếu alt text | `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js missing-alt` |
 
-**Quy tắc cứng**: Chạy command → đọc output → báo cáo. **KHÔNG** viết script bằng curl/bash/python/awk.
+Các task còn lại (sửa meta, fix H1, viết content...) → dùng WP/WC REST API trực tiếp.
 
 ## Periodic Checks
 
