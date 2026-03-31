@@ -18,15 +18,33 @@
 | wp-technical-seo | Technical SEO fixes (meta, schema, H1, alt, canonical) | "sửa meta", "schema", "technical SEO" |
 
 ### WordPress API Access
-```
-Base URL: ${WP_BASE_URL}/wp-json/wp/v2/
-Auth: Basic Auth (${WP_USERNAME}:${WP_APP_PASSWORD})
-Allowed endpoints:
-  GET/PUT /posts, /pages, /media, /categories, /tags
-  NOT allowed: /users, /settings, /plugins, /themes
 
-WooCommerce: ${WP_BASE_URL}/wp-json/wc/v3/
-Auth: Query params (consumer_key, consumer_secret)
+**Base URL (hardcoded)**: `https://agowautomation.com`
+
+**Credentials — đọc từ environment variables bằng exec tool:**
+```
+Lấy tất cả cùng lúc:
+  printenv WP_USERNAME WP_APP_PASSWORD WC_CONSUMER_KEY WC_CONSUMER_SECRET
+
+Hoặc từng biến:
+  printenv WP_USERNAME
+  printenv WP_APP_PASSWORD
+  printenv WC_CONSUMER_KEY
+  printenv WC_CONSUMER_SECRET
+```
+
+> ⚠️ KHÔNG tìm file `.env` — file đó không tồn tại trong container.
+> Credentials được inject qua Docker env_file → dùng `printenv` để đọc.
+
+**Endpoints:**
+```
+WP REST API: https://agowautomation.com/wp-json/wp/v2/
+Auth: Basic Auth (base64 của WP_USERNAME:WP_APP_PASSWORD)
+Allowed: GET/PUT /posts, /pages, /media, /categories, /tags
+NOT allowed: /users, /settings, /plugins, /themes
+
+WooCommerce: https://agowautomation.com/wp-json/wc/v3/
+Auth: ?consumer_key=WC_CONSUMER_KEY&consumer_secret=WC_CONSUMER_SECRET
 Allowed: GET/PUT /products
 NOT allowed: /orders, /customers, /coupons
 ```

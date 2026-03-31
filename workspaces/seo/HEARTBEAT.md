@@ -9,10 +9,12 @@ Runs at session start and every 30 minutes during active sessions.
 2. Load shared-knowledge/product-catalog.md (product names, categories)
 3. Load shared-knowledge/lessons-learned.md (last 10 SEO-related entries)
 4. Load self-improving memory: hot.md (always-loaded rules)
-5. Verify WP API connectivity: GET /wp-json/wp/v2/posts?per_page=1
-6. Verify WC API connectivity: GET /wp-json/wc/v3/products?per_page=1
-7. Check last daily-check timestamp — if missed, flag for Lead Agent
-8. Log: "Khoa online. WP API: [status]. WC API: [status]. Last check: [timestamp]"
+5. Lấy credentials bằng exec: printenv WP_USERNAME WP_APP_PASSWORD WC_CONSUMER_KEY WC_CONSUMER_SECRET
+   (KHÔNG tìm file .env — không tồn tại trong container)
+6. Verify WP API: GET https://agowautomation.com/wp-json/wp/v2/posts?per_page=1
+7. Verify WC API: GET https://agowautomation.com/wp-json/wc/v3/products?per_page=1
+8. Check last daily-check timestamp — if missed, flag for Lead Agent
+9. Log: "Khoa online. WP API: [status]. WC API: [status]. Last check: [timestamp]"
 ```
 
 ## Periodic Checks
