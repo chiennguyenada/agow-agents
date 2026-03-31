@@ -8,36 +8,25 @@
 
 ---
 
-## ⛔ HARD RULES — ĐỌC TRƯỚC KHI LÀM BẤT CỨ ĐIỀU GÌ
+## ⛔ BƯỚC ĐẦU TIÊN KHI NHẬN BẤT KỲ TASK NÀO
 
-### 1. Scripts có sẵn → PHẢI dùng, KHÔNG tự viết lại
-
-Các task này đã có script Node.js được test sẵn trong container:
-
-| Khi nhận task | Chạy ngay lệnh này |
-|---|---|
-| Duplicate alt text | `node /home/node/.openclaw/workspaces/seo/scripts/check-duplicate-alt.js` |
-
-**Workflow bắt buộc**: Chạy script → đọc output → báo cáo user. Xong.
-
-### 2. Tool được phép dùng cho data processing
-
-| ✅ ĐƯỢC PHÉP | ❌ CẤM TUYỆT ĐỐI |
-|---|---|
-| `node script.js` | `curl \| jq` (jq không có trong container) |
-| Node.js built-in `https` module | `bash` parse JSON/HTML bằng grep/sed/awk |
-| WP/WC REST API qua Node | `python requests` (không cài sẵn) |
-| | Tự viết lại script khi đã có sẵn |
-
-### 3. Quy trình khi nhận task
-
+**Chạy ngay lệnh này trước khi làm bất cứ điều gì khác:**
 ```
-Bước 1: Kiểm tra bảng "Scripts có sẵn" ở trên
-  → Có script? → Chạy script, báo kết quả. DỪNG.
-  → Không có? → Đọc SKILL.md của skill liên quan
-Bước 2: Thực thi theo đúng SKILL.md — không tự improvise
-Bước 3: Báo kết quả + undo option nếu là Tier 2
+node /home/node/.openclaw/workspaces/seo/scripts/khoa.js help
 ```
+
+Đọc output. Nếu có command phù hợp với task → chạy command đó. Xong.
+
+**Không được bắt đầu viết code, curl, hay bất kỳ script nào trước khi chạy lệnh trên.**
+
+---
+
+## Scripts Có Sẵn (kết quả của lệnh help ở trên)
+
+| Task | Command |
+|---|---|
+| Duplicate alt text trên cùng 1 trang | `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js check-duplicate-alt` |
+| Ảnh thiếu alt text | `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js missing-alt` |
 
 ---
 
@@ -59,7 +48,7 @@ Bước 3: Báo kết quả + undo option nếu là Tier 2
 ```bash
 printenv WP_USERNAME WP_APP_PASSWORD WC_CONSUMER_KEY WC_CONSUMER_SECRET
 ```
-> ⚠️ KHÔNG tìm file `.env` — dùng `printenv` để đọc từ Docker env.
+> ⚠️ KHÔNG tìm file `.env` — không tồn tại trong container. Dùng `printenv`.
 
 **Endpoints:**
 ```
@@ -101,16 +90,15 @@ rank_math_focus_keyword  — Primary keyword
 2. **Alt text inflation**: Không đặt alt text giống nhau cho nhiều ảnh TRÊN CÙNG 1 TRANG
 3. **Crawl staleness**: Re-crawl trước khi fix — không dùng data cũ hơn 24h
 4. **WC credentials**: WooCommerce dùng Consumer Key/Secret — KHÔNG phải WP App Password
-5. **GSC format**: `sc-domain:agowautomation.com` (không www, không https)
-6. **PageBuilder H1**: Cần PHP filter để inject H1 vào trang dùng page builder
+5. **GSC format**: `sc-domain:agowautomation.com`
+6. **PageBuilder H1**: Cần PHP filter để inject H1
 
 ---
 
 ## Telegram Direct Access
 
 - Bot riêng: `@AgowKhoaBot` — OpenClaw route trực tiếp, không qua Tong
-- Verify sender trước khi execute: admin → full access, operator → Tier 1+2, other → ignore
-- Response: tiếng Việt, ngắn gọn trong group, kỹ thuật bằng tiếng Anh
+- Verify sender: admin → full access, operator → Tier 1+2, other → ignore
 
 ### Authorization
 | Role | Tier 1 | Tier 2 | Tier 3 |
@@ -127,5 +115,6 @@ rank_math_focus_keyword  — Primary keyword
 | WP API 401 | Check credentials → alert admin |
 | WP API 429 | Exponential backoff (2s, 4s, 8s, 16s) |
 | WP API 500 | Retry 3x → alert admin |
-| jq not found | Dùng Node.js thay thế |
-| curl timeout | Dùng Node.js `https` module thay thế |
+| `jq: not found` | **Dùng `node khoa.js <command>` thay thế** |
+| `ModuleNotFoundError: requests` | **Dùng `node khoa.js <command>` thay thế** |
+| Script timeout | **Dùng `node khoa.js <command>` thay thế** |
