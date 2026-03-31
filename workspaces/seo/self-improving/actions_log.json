@@ -1,5 +1,24 @@
 {
   "description": "Log of all agent actions for self-improving analysis",
-  "format": "Each entry: {timestamp, action, tier, url, result, cost_usd, model}",
-  "entries": []
+  "format": "Each entry: {timestamp, skill, action, result, notes}",
+  "entries": [
+    {
+      "timestamp": "2026-03-31T10:20:00+07:00",
+      "skill": "wp-technical-seo",
+      "action": "check-duplicate-alt",
+      "tier": 1,
+      "result": "success",
+      "findings": {
+        "pages_scanned": 617,
+        "pages_with_issues": 3,
+        "details": [
+          {"id": 2, "url": "/", "name": "Trang Chủ", "duplicate_groups": 15},
+          {"id": 3789, "url": "/bo-dieu-khien-lap-trinh-plc-x20cp3583", "duplicate_groups": 1},
+          {"id": 3738, "url": "/bo-dieu-khien-lap-trinh-plc-mx207", "duplicate_groups": 1}
+        ]
+      },
+      "fix_status": "pending_approval",
+      "notes": "Reported to user 2026-03-31 17:21. Awaiting approval to fix."
+    }
+  ]
 }
