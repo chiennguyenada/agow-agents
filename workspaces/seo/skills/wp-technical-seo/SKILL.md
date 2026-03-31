@@ -96,34 +96,34 @@ Cách kiểm tra duplicate alt đúng:
 ```
 
 ### DUPLICATE_ALT (ảnh trùng alt trên cùng 1 trang)
+
+**BƯỚC 1 — Chạy script có sẵn (LUÔN dùng cách này, không tự viết lại):**
+```bash
+node /home/node/.openclaw/workspaces/seo/scripts/check-duplicate-alt.js
 ```
-Phương pháp phát hiện — PHẢI THEO ĐÚNG THỨ TỰ NÀY:
+Script này đã được test và cho kết quả đúng. Đọc output, báo cáo cho user.
 
-1. Posts/Pages — dùng content.rendered (KHÔNG dùng _links.wp:featuredmedia):
-   GET /wp-json/wp/v2/pages?per_page=100&_fields=id,title,link,content
-   GET /wp-json/wp/v2/posts?per_page=100&_fields=id,title,link,content
-   → Với mỗi page/post: parse content.rendered bằng regex <img[^>]+alt="([^"]*)"
-   → Đếm tần suất mỗi alt text TRONG CÙNG 1 TRANG
-   → Báo lỗi nếu bất kỳ alt text nào xuất hiện >= 2 lần
+**BƯỚC 2 — Phân loại kết quả từ script:**
+- Cùng 1 ảnh (same src) dùng 2 lần → bình thường, KHÔNG báo lỗi
+- 2 ảnh KHÁC NHAU có cùng alt text → LỖI THỰC SỰ, cần sửa (Tier 2)
 
-   ⚠️ KHÔNG dùng _links.wp:featuredmedia để check duplicate:
-   _links chỉ cho biết featured image, KHÔNG bao gồm ảnh trong content.
-   Trang Chủ ví dụ: có 117 ảnh trong content.rendered, không có featured media link.
-
-2. WC Products — dùng images[] từ WC API:
-   GET /wp-json/wc/v3/products?per_page=100&_fields=id,name,permalink,images
-   → Với mỗi product: kiểm tra images[].alt, đếm duplicate trong mảng đó
-
-3. Phân loại khi phát hiện duplicate:
-   - Cùng 1 ảnh (same src/id) dùng 2 lần → "bình thường", không cần sửa
-   - 2 ảnh KHÁC NHAU cùng alt text → LỖI THỰC SỰ, cần sửa
-
-Cách sửa ảnh lỗi thực sự:
-   - Ảnh chụp góc khác nhau cùng sản phẩm: thêm hậu tố mô tả
-     Ví dụ: "PLC X20CP3583" x2 → "PLC X20CP3583 mặt trước" + "PLC X20CP3583 kết nối"
-   - Ảnh minh họa trùng nhau: mô tả cụ thể hơn nội dung từng ảnh
-   - Giữ ảnh chính (index 0), sửa ảnh phụ (index 1+)
+**BƯỚC 3 — Cách sửa (Tier 2, sửa rồi notify):**
 ```
+Giữ ảnh đầu tiên (index 0), sửa các ảnh còn lại:
+- Ảnh góc khác cùng sản phẩm:
+    "PLC X20CP3583" → "PLC X20CP3583 mặt sau" / "PLC X20CP3583 chi tiết kết nối"
+- Ảnh minh họa nội dung:
+    Mô tả cụ thể hơn những gì đang thấy trong ảnh đó
+
+WC Products: PUT /wp-json/wc/v3/products/{id}  body: {"images": [...updated images array...]}
+WP Media   : PUT /wp-json/wp/v2/media/{id}      body: {"alt_text": "new alt"}
+```
+
+⚠️ **Các lỗi Khoa hay mắc — TRÁNH:**
+- ❌ Dùng `_links.wp:featuredmedia` để check duplicate → chỉ thấy featured image, bỏ sót 117 ảnh trong content
+- ❌ Tự viết bash/curl script để parse HTML → curl không có jq, timeout, kết quả sai
+- ❌ Query `/wp-json/wp/v2/media` (media library) → báo duplicate cross-site, không phải same-page
+- ❌ Chỉ check 10 items rồi báo "không có lỗi" → phải pagination qua toàn bộ (script có sẵn đã xử lý)
 
 ### NO_SCHEMA
 ```
