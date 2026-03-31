@@ -26,8 +26,12 @@ workspaces/lead/sandbox/*
 Thumbs.db
 desktop.ini
 
-# IDE
+# IDE / Local tool config
 .vscode/
 .idea/
 *.swp
 *.swo
+.claude/
+
+# OpenClaw runtime state (per-workspace, not source)
+workspaces/**/.openclaw/

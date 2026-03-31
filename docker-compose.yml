@@ -1,23 +1,21 @@
-version: "3.8"
-
 services:
   openclaw:
-    image: ghcr.io/anthropics/openclaw:latest
+    image: ghcr.io/openclaw/openclaw:latest
     container_name: agow-openclaw
     restart: unless-stopped
     ports:
       - "127.0.0.1:18789:18789"
     volumes:
-      - ./openclaw-home:/home/openclaw
-      - ./workspaces:/home/openclaw/workspaces:ro
-      - ./shared-knowledge:/home/openclaw/shared-knowledge
-      - ./guardrails:/home/openclaw/guardrails:ro
-      - ./scripts:/home/openclaw/scripts:ro
-      - ./monitoring:/home/openclaw/monitoring:ro
+      - ./openclaw-home:/home/node/.openclaw
+      - ./workspaces:/home/node/.openclaw/workspaces
+      - ./shared-knowledge:/home/node/.openclaw/shared-knowledge
+      - ./guardrails:/home/node/.openclaw/guardrails:ro
+      - ./scripts:/home/node/.openclaw/scripts:ro
+      - ./monitoring:/home/node/.openclaw/monitoring:ro
     env_file:
       - .env
     environment:
-      - OPENCLAW_CONFIG=/home/openclaw/openclaw.json
+      - OPENCLAW_CONFIG_PATH=/home/node/.openclaw/openclaw.json
       - OPENCLAW_PORT=18789
       - TZ=Asia/Ho_Chi_Minh
     mem_limit: 2g

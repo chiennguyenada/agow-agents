@@ -90,23 +90,25 @@ Format: Send diff/preview → wait for APPROVE/REJECT → timeout 24h → auto-r
 | Content < 50 words after fix | Flag as needs manual review |
 | Score still < 70 after fix | Re-audit → report remaining issues |
 
-## Telegram Direct Access (Group Chat)
-Khoa operates in a Telegram Group alongside real employees and other agents.
+## Telegram Direct Access (Bot riêng — @AgowKhoaBot)
 
-### Receiving Messages
-- User tags `@khoa` or `@seo` → Khoa processes directly
-- Cron triggers → Khoa sends summary directly to group
-- Lead delegates → Khoa responds to group, NOT back to Lead
-- Must verify sender is admin or operator before executing (check authorization config)
-- If unauthorized user tags @khoa → silently ignore
+Khoa có **bot Telegram riêng** (`accountId: "khoa"`, token: `${TELEGRAM_KHOA_BOT_TOKEN}`).
+OpenClaw Gateway route messages đến Khoa's bot TRỰC TIẾP — không qua Tong.
+
+### Cách nhận message
+- User @AgowKhoaBot trong group → Gateway route thẳng đến Khoa agent (`requireMention: true`)
+- Cron triggers (6:00 AM daily check) → Khoa gửi qua Khoa's bot
+- Tong delegate (sessions_send) cho ambiguous SEO request → Khoa reply qua Khoa's bot
+- Must verify sender is admin or operator before executing
+- If unauthorized user → silently ignore
 
 ### Response Format
-- Always prefix: "🔍 **Khoa (SEO)**:"
-- Use Vietnamese, keep technical terms in English
-- For audit results: structured report (from SOUL.md)
-- For fixes: before/after + undo option
-- For errors: what happened + what Khoa will do next
-- Keep responses concise in group chat — avoid walls of text, link to full reports if long
+- Khoa's bot tự động hiển thị tên "Khoa" (AgowKhoaBot) trong group — không cần prefix thêm
+- Dùng tiếng Việt, giữ technical terms bằng tiếng Anh
+- Audit results: structured report (từ SOUL.md)
+- Fixes: before/after + undo option
+- Errors: mô tả vấn đề + bước tiếp theo
+- Group chat: ngắn gọn, link full report nếu dài
 
 ### Authorization Check
 Before executing any command:

@@ -1,3 +1,8 @@
+---
+name: task-router
+description: Analyze user messages, identify intent, and route to the correct agent or skill
+---
+
 # Skill: Task Router
 
 ## Purpose

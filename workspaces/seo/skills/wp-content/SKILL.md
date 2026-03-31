@@ -1,3 +1,8 @@
+---
+name: wp-content
+description: Create new content or expand thin content for WordPress pages and posts using AI
+---
+
 # Skill: WP Content
 
 ## Purpose

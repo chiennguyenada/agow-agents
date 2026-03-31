@@ -1,6 +1,6 @@
 {
   "$schema": "https://openclaw.ai/schema/config.json",
-  "version": "1.0",
+  "version": "1.1",
   "project": {
     "name": "Agow Automation",
     "description": "Multi-agent AI system for B&R Automation distributor in Vietnam",
@@ -8,79 +8,90 @@
     "timezone": "Asia/Ho_Chi_Minh"
   },
 
-  "agents": [
+  "agents": {
+    "defaults": {
+      "model": { "primary": "${PRIMARY_MODEL}" },
+      "compaction": { "mode": "safeguard" },
+      "maxConcurrent": 3
+    },
+    "list": [
+      {
+        "id": "lead",
+        "default": true,
+        "name": "Tong — Lead Agent",
+        "workspace": "workspaces/lead",
+        "description": "Smart router for ambiguous requests, monitor, capability evolution coordinator",
+        "identity": { "name": "Tong", "emoji": "🧠" },
+        "groupChat": {
+          "mentionPatterns": ["@tong", "@lead"]
+        },
+        "maxConcurrentSessions": 3,
+        "sessionTimeout": 90
+      },
+      {
+        "id": "seo",
+        "name": "Khoa — SEO Agent",
+        "workspace": "workspaces/seo",
+        "model": { "primary": "${SECONDARY_MODEL}" },
+        "description": "SEO specialist — audits, content creation, technical SEO, daily monitoring",
+        "identity": { "name": "Khoa", "emoji": "🔍" },
+        "groupChat": {
+          "mentionPatterns": ["@khoa", "@seo"]
+        },
+        "maxConcurrentSessions": 2,
+        "sessionTimeout": 60
+      }
+    ]
+  },
+
+  "bindings": [
     {
-      "id": "lead",
-      "name": "Lead Agent",
-      "workspace": "workspaces/lead",
-      "model": "${PRIMARY_MODEL}",
-      "description": "Smart router for ambiguous requests, monitor, capability evolution coordinator",
-      "allowedChannels": ["telegram"],
-      "maxConcurrentSessions": 3,
-      "sessionTimeout": 90
+      "agentId": "lead",
+      "match": { "channel": "telegram", "accountId": "default" }
     },
     {
-      "id": "seo",
-      "name": "Khoa - SEO Agent",
-      "workspace": "workspaces/seo",
-      "model": "${SECONDARY_MODEL}",
-      "description": "SEO specialist - audits, content creation, technical SEO, daily monitoring",
-      "allowedChannels": ["telegram"],
-      "maxConcurrentSessions": 2,
-      "sessionTimeout": 60
+      "agentId": "seo",
+      "match": { "channel": "telegram", "accountId": "khoa" }
     }
   ],
 
+  "tools": {
+    "sessions": { "visibility": "all" },
+    "agentToAgent": {
+      "enabled": true,
+      "allow": ["lead", "seo"]
+    }
+  },
+
   "channels": {
     "telegram": {
-      "type": "telegram",
-      "botToken": "${TELEGRAM_BOT_TOKEN}",
-      "chatMode": "group",
-      "groupChatId": "${TELEGRAM_GROUP_CHAT_ID}",
-      "privacyMode": false,
-      "defaultAgent": "lead",
-      "authorization": {
-        "admin": ["${TELEGRAM_ADMIN_USER_ID}"],
-        "operators": "${TELEGRAM_OPERATOR_USER_IDS}",
-        "roles": {
-          "admin": {
-            "description": "Full control — all tiers, all agents, all commands",
-            "allowedTiers": [1, 2, 3],
-            "canApprove": true,
-            "canCancel": true
-          },
-          "operator": {
-            "description": "Can request Tier 1 and Tier 2 actions, cannot approve Tier 3",
-            "allowedTiers": [1, 2],
-            "canApprove": false,
-            "canCancel": false
+      "enabled": true,
+      "streaming": "partial",
+      "accounts": {
+        "default": {
+          "botToken": "${TELEGRAM_BOT_TOKEN}",
+          "dmPolicy": "allowlist",
+          "allowFrom": ["${TELEGRAM_ADMIN_USER_ID}", "${TELEGRAM_OPERATOR_USER_IDS}"],
+          "groups": {
+            "${TELEGRAM_GROUP_CHAT_ID}": {
+              "requireMention": false,
+              "groupPolicy": "allowlist",
+              "allowFrom": ["${TELEGRAM_ADMIN_USER_ID}", "${TELEGRAM_OPERATOR_USER_IDS}"]
+            }
           }
         },
-        "unauthorizedBehavior": "ignore"
-      },
-      "routing": {
-        "mode": "hybrid",
-        "tagPrefix": "@",
-        "directTags": {
-          "@khoa": "seo",
-          "@seo": "seo",
-          "@lead": "lead"
-        },
-        "fallback": "lead",
-        "contextAware": {
-          "enabled": true,
-          "description": "Bot reads all messages, proactively suggests when relevant context detected",
-          "triggerKeywords": {
-            "seo": ["SEO", "website", "ranking", "meta", "audit", "content", "Google"],
-            "lead": ["status", "báo cáo", "report", "hệ thống"]
-          },
-          "proactiveBehavior": "suggest_only",
-          "proactivePrefix": "💡 Gợi ý: "
+        "khoa": {
+          "botToken": "${TELEGRAM_KHOA_BOT_TOKEN}",
+          "dmPolicy": "allowlist",
+          "allowFrom": ["${TELEGRAM_ADMIN_USER_ID}", "${TELEGRAM_OPERATOR_USER_IDS}"],
+          "groups": {
+            "${TELEGRAM_GROUP_CHAT_ID}": {
+              "requireMention": true,
+              "groupPolicy": "allowlist",
+              "allowFrom": ["${TELEGRAM_ADMIN_USER_ID}", "${TELEGRAM_OPERATOR_USER_IDS}"]
+            }
+          }
         }
-      },
-      "rateLimits": {
-        "messagesPerMinute": 10,
-        "sessionsPerHour": 20
       }
     }
   },
@@ -134,7 +145,7 @@
       "cron": "0 8 * * 1",
       "agent": "lead",
       "skill": "task-router",
-      "args": {"action": "weekly-report"},
+      "args": { "action": "weekly-report" },
       "description": "Weekly summary report on Monday 8:00 AM"
     }
   },
@@ -168,5 +179,10 @@
       "sqlite_size",
       "last_successful_run"
     ]
+  },
+
+  "gateway": {
+    "bind": "127.0.0.1:18789",
+    "auth": {}
   }
 }

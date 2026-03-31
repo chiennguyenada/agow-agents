@@ -6,6 +6,113 @@
 
 ---
 
+### 2026-03-31 — Fix SKILL.md Frontmatter (6 files)
+**Phase**: 1a (Verification fix)
+**Files changed**:
+- `workspaces/lead/skills/task-router/SKILL.md` — modified — Added YAML frontmatter `name: task-router`, `description: ...`
+- `workspaces/lead/skills/capability-evolution/SKILL.md` — modified — Added YAML frontmatter `name: capability-evolution`, `description: ...`
+- `workspaces/seo/skills/wp-audit/SKILL.md` — modified — Added YAML frontmatter `name: wp-audit`, `description: ...`
+- `workspaces/seo/skills/wp-content/SKILL.md` — modified — Added YAML frontmatter `name: wp-content`, `description: ...`
+- `workspaces/seo/skills/wp-daily-check/SKILL.md` — modified — Added YAML frontmatter `name: wp-daily-check`, `description: ...`
+- `workspaces/seo/skills/wp-technical-seo/SKILL.md` — modified — Added YAML frontmatter `name: wp-technical-seo`, `description: ...`
+
+**Why**: CLAUDE.md requires `name` (kebab-case) and `description` (1 line) in SKILL.md frontmatter. All 6 files were missing the `--- name: ... description: ... ---` block — Layer 1 verification FAIL. Only `wp-gsc/SKILL.md` was already correct (created later with proper frontmatter).
+**Tests**: Layer 1: 7/7 PASS (all SKILL.md frontmatter verified with grep check) | Layer 2: N/A (frontmatter only) | Layer 3: N/A | Layer 4: No logic changed — content of skills untouched
+**Dependencies affected**: OpenClaw skill discovery (reads frontmatter to list available skills)
+**Notes**: Skills were functionally working but OpenClaw may have been unable to auto-discover/list them without frontmatter.
+
+---
+
+### 2026-03-31 — Fix Multi-Agent Group Routing (Khoa bot nhận group message trực tiếp)
+**Phase**: 1a (Debugging)
+**Files changed**:
+- `openclaw-home/openclaw.json` — modified — Thêm 2 peer bindings cho group `-5197557480`: `{agentId:"seo", match:{channel:"telegram", accountId:"khoa", peer:{kind:"group", id:"-5197557480"}}}` và tương tự cho lead. Thêm `groupAllowFrom`, `groups["-5197557480"].requireMention: true` vào `accounts.khoa`. Binding order: most-specific (peer) trước, fallback (DM) sau.
+- `workspaces/lead/AGENTS.md` — modified — Rewrite toàn bộ Routing Rules section. Rule 0 đã sai: trước đây vẫn còn `sessions_send` cho @khoa group messages, nay sửa thành Tong HOÀN TOÀN im lặng vì Khoa bot có binding group riêng. Cập nhật Inter-Agent Communication table và Rules list.
+
+**Why**: Root cause của bug "@khoa trong group không work". Theo OpenClaw docs, routing đến agent chỉ phụ thuộc vào `bindings[]`, không phải `mentionPatterns`. Config cũ chỉ có `accountId`-level bindings: Khoa bot chỉ nhận DM (không có group binding), tất cả group message đều vào Tong bot. Fix: thêm `peer: {kind:"group", id:"..."}` binding cho Khoa bot → Khoa nhận group message trực tiếp.
+**Tests**: Layer 1: 1/1 PASS (openclaw.json valid JSON) | Layer 2: PASS (binding logic per docs) | Layer 3: PENDING (cần test live trong group sau khi cấp quyền reaction cho Khoa bot) | Layer 4: Tong bot binding không thay đổi — Tong vẫn nhận @tong messages đúng
+**Dependencies affected**: Toàn bộ group message routing. Tong không còn relay @khoa messages.
+**Notes**: Sau fix này cần: (1) Cấp quyền "Add reactions" cho @AgowKhoaBot trong group (Admin setting), (2) Test live: "@khoa xin chào" → Khoa bot trả lời trực tiếp.
+
+---
+**Phase**: 1a (Architecture upgrade)
+**Files changed**:
+- `openclaw-home/openclaw.json` — modified — Migrated from single-bot to 2-account pattern. Added `bindings[]` array (lead→default, seo→khoa). Moved bot config from `channels.telegram.botToken` flat to `channels.telegram.accounts.{default,khoa}`. Added `TELEGRAM_KHOA_BOT_TOKEN` for Khoa's bot. Fixed truncated `"gateway"` key. Added `identity.{name,emoji}` for both agents.
+- `openclaw.json` — modified (design config) — Same 2-bot pattern. Updated agents from flat array to `agents.{defaults,list}` format matching live config. Added `bindings[]`. Version bumped to 1.1.
+- `workspaces/lead/AGENTS.md` — modified — Rewrote Routing Rules to reflect 2-bot architecture. Rule 1 changed: Tong no longer needs sessions_send for @khoa/@seo (Gateway routes directly). sessions_send now only for ambiguous SEO-intent untagged messages. Added routing table showing when to use sessions_send.
+- `workspaces/seo/AGENTS.md` — modified — Updated "Telegram Direct Access" section. Now clearly states Khoa has own bot (@AgowKhoaBot, accountId: "khoa"). Explains Gateway routes directly to Khoa — no Tong relay.
+- `.env.example` — modified — Added `TELEGRAM_KHOA_BOT_TOKEN` with setup instructions. Renamed Tong's bot section. Added note to add BOTH bots to the group.
+
+**Why**: Read OpenClaw docs on multi-agent Telegram. Native pattern = one bot per agent, not sessions_send relay. Benefits: (1) Khoa appears as separate identity "Khoa SEO" in group, (2) Lower latency — no Tong intermediary for @khoa messages, (3) No dependence on agentToAgent for @khoa routing, (4) Cleaner architecture matching OpenClaw design intent.
+
+**Architecture before → after**:
+```
+BEFORE: Tong bot (1 bot) → receives @khoa → sessions_send → Khoa → Tong replies for Khoa
+AFTER:  Tong bot → receives @tong/@lead → responds directly
+        Khoa bot → receives @AgowKhoaBot → responds directly
+        agentToAgent still ON for ambiguous Tong→Khoa delegation
+```
+
+**Tests**: Layer 1: 2/2 PASS (both openclaw.json files valid JSON) | Layer 2: 4/4 PASS (all modified files verified) | Layer 3: DEFERRED — needs new bot token + restart | Layer 4: Checked lead+seo AGENTS.md, .env.example consistency
+**Dependencies affected**: Telegram channel behavior, all message routing, Tong's session prompt
+**Notes**: Setup required: (1) Create @AgowKhoaBot via BotFather, (2) Get token → TELEGRAM_KHOA_BOT_TOKEN in .env, (3) Add @AgowKhoaBot to group, (4) Privacy mode for Khoa's bot can stay ON (requireMention: true), (5) Restart OpenClaw container.
+
+---
+
+### 2026-03-29 — Tong Self-Patch + First Real Audit Completed
+**Phase**: 1a (Verification)
+**Files changed**:
+- `openclaw-home/openclaw.json` — modified by Tong (self-patched via Telegram) — Added `tools.sessions.visibility: "all"` and `tools.agentToAgent.enabled: true`. This was the ROOT CAUSE of sessions_send failing silently — restricted visibility prevented Tong from seeing/calling the sessions tools. Tong self-diagnosed and patched by reading its own openclaw.json via file tool, then writing the corrected version.
+- `openclaw-home/agents/seo/` — created — Khoa's agent directory created automatically by OpenClaw when Tong first called sessions_send to the seo agent. Contains session JSONL (80KB, 630be659-*.jsonl).
+- `workspaces/seo/shared-knowledge/audit-results-2026-03-29.json` — created by Khoa — First real audit of agowautomation.com: 35 URLs, avg score 70/100. Top issues: THIN_CONTENT (34 URLs — CAUTION: false positive due to JS rendering), MISSING_ALT (34 URLs — real), LONG_TITLE (15), SHORT_TITLE (11), NO_H1 (5).
+
+**Why**: After requireMention:false fix, Tong could see @khoa messages but sessions_send tool was silently unavailable because `tools.sessions.visibility` defaulted to "restricted". Tong self-diagnosed this during live Telegram conversation by analyzing why its sessions_send calls weren't working, then autonomously patched openclaw.json and triggered container restart.
+
+**Tong's self-diagnosis transcript** (2:39-2:48 PM, 2026-03-29):
+1. Tong attempted sessions_send → failed silently
+2. Tong read openclaw.json → noticed missing tools config
+3. Tong wrote corrected openclaw.json with sessions visibility "all" + agentToAgent enabled
+4. Tong triggered OpenClaw restart
+5. Khoa initialized successfully, ran audit on 35 URLs
+6. Khoa sent formatted Telegram report with real data
+
+**Tests**: Layer 1: JSON valid (verified in file) | Layer 2: Khoa session file 80KB confirms real work done | Layer 3: ✅ PASS — full Tong→Khoa→Telegram flow working end-to-end | Layer 4: N/A
+**Dependencies affected**: Inter-agent communication (now fully enabled), all future sessions_send calls
+**Notes**: THIN_CONTENT showing 34/35 URLs is a FALSE POSITIVE — site is JS-heavy, curl fetches return 0-word body. Needs Playwright for accurate content detection. MISSING_ALT for 34 URLs is a real finding and top P1 priority. Tong's self-patching capability (Capability Evolution Protocol) worked as designed.
+
+---
+
+### 2026-03-29 — Automated Routing Tests + requireMention Fix + Session Reset
+**Phase**: 1a (Debugging)
+**Files changed**:
+- `openclaw-home/openclaw.json` — modified — Changed `requireMention: true` → `requireMention: false`. Root cause: requireMention:true caused @khoa messages to be SILENTLY DROPPED (they don't match Tong's mentionPatterns @tong/@lead). With false, all messages go to Tong (default agent) who then routes via sessions_send.
+- `openclaw-home/agents/lead/sessions/108fc25d-*.jsonl` — deleted — Stale session with corrupted conversation history (Tong repeatedly saying "Khoa not configured"). Deleted to force fresh session with correct AGENTS.md.
+- `openclaw-home/agents/lead/sessions/sessions.json` — modified — Removed stale session entry for deleted JSONL. Keeps `agent:lead:main` heartbeat session.
+- `test_routing.py` — created — Automated routing test harness. Calls Anthropic API directly with Tong's actual AGENTS.md+SOUL.md. Runs 5 test cases: T01-T05 covering @khoa, @seo, @tong, and ambiguous SEO routing. All 5/5 PASS confirmed.
+
+**Why**: (1) requireMention:true was silently dropping @khoa messages — the 2:15-2:16 PM messages in Telegram got no response, confirming they were dropped not routed. (2) Old session history (Tong saying "Khoa not configured" 3 times) was anchoring Claude's behavior against the new routing rules. (3) Automated tester needed so routing can be verified without manual Telegram testing.
+
+**Tests**: Layer 1: JSON valid | Layer 2: 5/5 PASS (automated routing tests all pass) | Layer 3: DEFERRED (container restart needed) | Layer 4: openclaw.json change affects all agents — verified seo agent config unchanged
+**Dependencies affected**: All group message routing behavior, Tong's session state
+**Notes**: Container restart needed after this change. After restart, test by sending "@khoa audit agowautomation.com" — Tong should reply "Đã chuyển cho Khoa" and Khoa should initialize and respond. To re-run routing tests: `python3 test_routing.py` from project folder.
+
+---
+
+### 2026-03-29 — Fix @khoa Routing: sessions_send Instructions
+**Phase**: 1a (Debugging)
+**Files changed**:
+- `workspaces/lead/AGENTS.md` — modified — Replaced vague "hybrid routing model" section with explicit 3-rule routing: Rule 1 (@khoa/@seo → always sessions_send to "seo" agent immediately), Rule 2 (@tong/@lead → handle self), Rule 3 (no tag → intent-based routing). Added sessions_send usage example with exact syntax. Added explicit sessions_send guide with agentId/message/waitForReply params. Updated Rules to forbid sessions_list before delegating.
+
+**Why**: Tong (lead agent) was receiving ALL messages including @khoa, calling sessions_list to check for existing Khoa sessions, finding none, and giving up instead of starting a new seo session. Root cause: AGENTS.md routing was ambiguous — Tong didn't know how to START the seo agent. The fix makes Rule 1 unconditional: see @khoa → immediately call sessions_send(agentId="seo") — no checking first.
+
+**Discovery process**: Read session JSONL transcript. Found Tong's thinking: "I need to check if there's a Khoa agent session available to route to." After finding none, Tong said "Khoa chưa được cấu hình" instead of starting a new session. Confirmed sessions_send is available (from sessions.json toolsSnapshot). Confirmed systemPromptReport source="run" meaning AGENTS.md is reloaded fresh for EVERY message — no container restart needed.
+
+**Tests**: Layer 1: 1/1 PASS (AGENTS.md format valid, no syntax errors) | Layer 2: Manual review — routing logic clear and unambiguous | Layer 3: DEFERRED — needs live test | Layer 4: checked AGENTS.md dependencies (SOUL.md unchanged, openclaw.json unchanged)
+**Dependencies affected**: Lead agent routing behavior only
+**Notes**: NO container restart needed — OpenClaw reloads workspace files fresh per message (source="run"). Send @khoa message to trigger the fix.
+
+---
+
 ## How to Log
 
 ```

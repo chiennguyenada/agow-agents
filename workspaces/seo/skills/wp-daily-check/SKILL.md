@@ -1,3 +1,8 @@
+---
+name: wp-daily-check
+description: Automated daily SEO health check — 8-task cycle (crawl, score, fix meta, fix content, report)
+---
+
 # Skill: WP Daily Check
 
 ## Purpose

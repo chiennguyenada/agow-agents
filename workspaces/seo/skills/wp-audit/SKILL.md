@@ -1,3 +1,8 @@
+---
+name: wp-audit
+description: Full SEO audit of agowautomation.com — crawl all URLs, score 0-100 with 13 issue codes
+---
+
 # Skill: WP Audit
 
 ## Purpose

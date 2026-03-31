@@ -1,3 +1,8 @@
+---
+name: wp-technical-seo
+description: Fix technical SEO issues — meta tags, H1, alt text, schema markup, canonical URLs
+---
+
 # Skill: WP Technical SEO
 
 ## Purpose

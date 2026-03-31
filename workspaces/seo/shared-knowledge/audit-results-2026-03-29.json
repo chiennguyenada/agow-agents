@@ -1,0 +1,88 @@
+{
+  "audit_date": "2026-03-29T14:48:17+07:00",
+  "domain": "agowautomation.com",
+  "urls_audited": 35,
+  "total_urls_in_site": 650,
+  "scope": "Sample audit (5% of total URLs)",
+  "avg_score": 70,
+  "score_distribution": {
+    "excellent_90_plus": 0,
+    "good_70_89": 28,
+    "needs_fix_50_69": 4,
+    "poor_30_49": 2,
+    "critical_under_30": 0
+  },
+  "top_issues": [
+    {
+      "code": "THIN_CONTENT",
+      "count": 34,
+      "severity": "high",
+      "description": "Content extraction detected 0 words (likely JavaScript rendered content). Body parsing failed."
+    },
+    {
+      "code": "MISSING_ALT",
+      "count": 34,
+      "severity": "high",
+      "description": "34/35 pages have images without alt text (3+ missing per page avg)"
+    },
+    {
+      "code": "LONG_TITLE",
+      "count": 15,
+      "severity": "medium",
+      "description": "15 pages have title tags exceeding 60 characters"
+    },
+    {
+      "code": "SHORT_TITLE",
+      "count": 11,
+      "severity": "medium",
+      "description": "11 pages have title tags under 30 characters"
+    },
+    {
+      "code": "NO_H1",
+      "count": 5,
+      "severity": "high",
+      "description": "5 pages missing H1 tag (likely category/checkout pages)"
+    }
+  ],
+  "priority_actions": [
+    {
+      "priority": 1,
+      "action": "Fix image alt text on all pages",
+      "effort": "Medium",
+      "impact": "High",
+      "estimated_pages": 650,
+      "notes": "Batch update via WP API. Check for duplicate alt text before fixing."
+    },
+    {
+      "priority": 2,
+      "action": "Audit title tag lengths (30-60 char target)",
+      "effort": "Low",
+      "impact": "Medium",
+      "estimated_pages": 26,
+      "notes": "Focus on LONG_TITLE (15) and SHORT_TITLE (11) pages"
+    },
+    {
+      "priority": 3,
+      "action": "Add H1 tags to 5 affected pages",
+      "effort": "Low",
+      "impact": "Medium",
+      "estimated_pages": 5,
+      "notes": "Likely checkout/cart pages. May need PageBuilder H1 filter injection."
+    },
+    {
+      "priority": 4,
+      "action": "Re-crawl with JavaScript rendering",
+      "effort": "High",
+      "impact": "Critical",
+      "estimated_pages": 650,
+      "notes": "Current crawl shows 0 words in body — likely Tailwind/React. Playwright needed for accurate audit."
+    }
+  ],
+  "notes": [
+    "Content word count detection failed (showing 0 words) — indicates JavaScript-heavy site or body extraction issue",
+    "2 pages have NO_CANONICAL, affecting SEO signals",
+    "1 page timeout during crawl (thanh-toan) — check server health",
+    "Good baseline: 80% pages scoring 70+. No critical issues detected.",
+    "Missing image alt text is highest-impact quick win (affects 97% of pages)"
+  ]
+}

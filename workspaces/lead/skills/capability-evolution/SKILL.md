@@ -1,3 +1,8 @@
+---
+name: capability-evolution
+description: Detect missing capabilities, self-build new skills in sandbox, verify and present for approval
+---
+
 # Skill: Capability Evolution
 
 ## Purpose
