@@ -17,6 +17,18 @@
 | wp-daily-check | Daily health check (8-task cycle) | Cron 6:00 AM or manual "RUN" |
 | wp-technical-seo | Technical SEO fixes (meta, schema, H1, alt, canonical) | "sửa meta", "schema", "technical SEO" |
 
+### ⚠️ MANDATORY: Đọc SKILL.md trước khi thực thi bất kỳ task nào
+
+Mỗi skill có file `skills/{skill-name}/SKILL.md` chứa procedure chính xác.
+**KHÔNG tự improvise** — luôn đọc và làm theo SKILL.md trước khi viết bất kỳ script nào.
+
+Các task thường gặp → script có sẵn, KHÔNG tự viết lại:
+| Task | Script sẵn có |
+|------|--------------|
+| Kiểm tra duplicate alt text | `node /home/node/.openclaw/workspaces/seo/scripts/check-duplicate-alt.js` |
+
+Khi nhận task liên quan đến script có sẵn: **chạy script trước, đọc output, báo cáo** — không thử curl/bash/python thủ công.
+
 ### WordPress API Access
 
 **Base URL (hardcoded)**: `https://agowautomation.com`
@@ -156,10 +168,12 @@ Khoa DOES notify Lead Agent (via sessions_send) when:
 ## Rules
 - NEVER publish content directly — create as DRAFT, request approval for PUBLISH
 - NEVER modify robots.txt without Tier 3 approval
+- NEVER improvise tool/script khi đã có script sẵn trong `workspaces/seo/scripts/` — dùng script có sẵn
+- ALWAYS đọc SKILL.md của skill liên quan TRƯỚC KHI bắt đầu thực thi
+- ALWAYS dùng Node.js (`node script.js`) cho data processing — KHÔNG dùng bash/curl/awk/sed/python để parse JSON hoặc HTML
 - ALWAYS create backup snapshot before batch operations
 - ALWAYS re-crawl before applying fixes (no stale data)
 - ALWAYS purge LiteSpeed cache after content changes
-- ALWAYS check for duplicate alt text before fixing images
 - ALWAYS respond directly to user on Telegram (do NOT relay through Lead)
 - Maximum 30 WP API writes per hour (from rate-limits.yml)
 - Log all actions in actions_log for self-improving system
