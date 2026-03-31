@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.24",
+    "lastTouchedAt": "2026-03-30T07:46:52.136Z"
+  },
+  "models": {
+    "providers": {
+      "claudible": {
+        "baseUrl": "https://claudible.io/v1",
+        "apiKey": "${CLAUDIBLE_API_KEY}",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "claude-sonnet-4.6",
+            "name": "Claude Sonnet 4.6",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          },
+          {
+            "id": "claude-haiku-4.5",
+            "name": "Claude Haiku 4.5",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          },
+          {
+            "id": "claude-opus-4.6",
+            "name": "Claude Opus 4.6",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 200000,
+            "maxTokens": 16384
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "claudible/claude-sonnet-4.6"
+      },
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 3
+    },
+    "list": [
+      {
+        "id": "lead",
+        "default": true,
+        "workspace": "/home/node/.openclaw/workspaces/lead",
+        "identity": {
+          "name": "Tong",
+          "emoji": "🧠"
+        },
+        "groupChat": {
+          "mentionPatterns": [
+            "@tong",
+            "@lead",
+            "@AgowTongBot"
+          ]
+        }
+      },
+      {
+        "id": "seo",
+        "workspace": "/home/node/.openclaw/workspaces/seo",
+        "model": {
+          "primary": "claudible/claude-sonnet-4.6"
+        },
+        "identity": {
+          "name": "Khoa",
+          "emoji": "🔍"
+        },
+        "groupChat": {
+          "mentionPatterns": [
+            "@khoa",
+            "@seo",
+            "@AgowKhoaBot"
+          ]
+        }
+      }
+    ]
+  },
+  "tools": {
+    "sessions": {
+      "visibility": "all"
+    },
+    "agentToAgent": {
+      "enabled": true,
+      "allow": [
+        "lead",
+        "seo"
+      ]
+    }
+  },
+  "bindings": [
+    {
+      "agentId": "seo",
+      "match": {
+        "channel": "telegram",
+        "accountId": "khoa",
+        "peer": { "kind": "group", "id": "-5197557480" }
+      }
+    },
+    {
+      "agentId": "lead",
+      "match": {
+        "channel": "telegram",
+        "accountId": "default",
+        "peer": { "kind": "group", "id": "-5197557480" }
+      }
+    },
+    {
+      "agentId": "seo",
+      "match": {
+        "channel": "telegram",
+        "accountId": "khoa"
+      }
+    },
+    {
+      "agentId": "lead",
+      "match": {
+        "channel": "telegram",
+        "accountId": "default"
+      }
+    }
+  ],
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "groups": {
+        "-5197557480": {
+          "requireMention": true
+        }
+      },
+      "groupAllowFrom": [
+        "212081475",
+        "7389824066"
+      ],
+      "groupPolicy": "allowlist",
+      "accounts": {
+        "default": {
+          "dmPolicy": "pairing",
+          "botToken": "${TELEGRAM_BOT_TOKEN}",
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        },
+        "khoa": {
+          "dmPolicy": "allowlist",
+          "botToken": "${TELEGRAM_KHOA_BOT_TOKEN}",
+          "allowFrom": [
+            "212081475",
+            "7389824066"
+          ],
+          "groupPolicy": "allowlist",
+          "groupAllowFrom": [
+            "212081475",
+            "7389824066"
+          ],
+          "groups": {
+            "-5197557480": {
+              "requireMention": true
+            }
+          },
+          "streaming": "partial"
+        }
+      },
+      "streaming": "partial"
+    }
+  },
+  "gateway": {
+    "auth": {
+      "mode": "token",
+      "token": "55a63add6a2c5b55427a6238bccd5fcadad291c7fd243e45"
+    }
+  }
+}
