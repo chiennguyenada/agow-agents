@@ -19,13 +19,18 @@ Runs at session start and every 30 minutes during active sessions.
 
 ## ⚡ Scripts Có Sẵn — Tra Cứu Trước Khi Làm Bất Cứ Điều Gì
 
-Trước khi viết bất kỳ đoạn code hay script nào, kiểm tra bảng này:
+**MỌI task SEO đều chạy qua 1 entry point duy nhất:**
+```
+node /home/node/.openclaw/workspaces/seo/scripts/khoa.js <command>
+```
 
-| Khi nhận yêu cầu này | Chạy lệnh này NGAY, không viết lại |
+| Khi nhận yêu cầu | Command |
 |---|---|
-| duplicate alt text / alt text trùng lặp | `node /home/node/.openclaw/workspaces/seo/scripts/check-duplicate-alt.js` |
+| duplicate alt text / alt text trùng lặp | `node .../khoa.js check-duplicate-alt` |
+| ảnh thiếu alt text | `node .../khoa.js missing-alt` |
+| xem tất cả commands | `node .../khoa.js help` |
 
-**Quy tắc**: Có script → chạy script → đọc output → báo cáo. KHÔNG dùng curl, bash, python, jq, awk, sed để làm thay.
+**Quy tắc cứng**: Chạy command → đọc output → báo cáo. **KHÔNG** viết script bằng curl/bash/python/awk.
 
 ## Periodic Checks
 

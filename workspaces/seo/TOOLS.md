@@ -1,26 +1,30 @@
 # TOOLS — Khoa SEO Agent
 
-## Scripts Có Sẵn (Node.js, đã test, chạy được trong container)
+## ⚡ Entry Point Duy Nhất Cho Mọi Task
 
-> Luôn tra bảng này trước khi tự viết script. Dùng `node <path>` để chạy.
+```bash
+node /home/node/.openclaw/workspaces/seo/scripts/khoa.js <command>
+```
 
-| Mục đích | Lệnh chạy |
+Xem tất cả commands có sẵn:
+```bash
+node /home/node/.openclaw/workspaces/seo/scripts/khoa.js help
+```
+
+### Commands hiện có
+
+| Command | Mục đích |
 |---|---|
-| Kiểm tra duplicate alt text (per-page) | `node /home/node/.openclaw/workspaces/seo/scripts/check-duplicate-alt.js` |
+| `check-duplicate-alt` | Tìm duplicate alt text trên cùng 1 trang — scan toàn bộ posts/pages/590 products |
+| `missing-alt` | Tìm ảnh chưa có alt text |
 
-## Công cụ được phép dùng
+**Quy tắc số 1**: Trước khi viết bất kỳ dòng code nào, chạy `khoa.js help` để xem command có sẵn.
 
-| ✅ Dùng được | ❌ Không dùng |
-|---|---|
-| `node script.js` | `curl \| jq` — jq không có trong container |
-| Node.js `https` module | `python requests` — không cài sẵn |
-| `printenv VAR` để đọc credentials | Tìm file `.env` — không tồn tại trong container |
-| `curl` để test API nhanh (GET đơn giản) | `curl \| awk/sed/grep` để parse JSON/HTML |
+---
 
 ## Credentials
 
 ```bash
-# Lấy tất cả một lúc:
 printenv WP_USERNAME WP_APP_PASSWORD WC_CONSUMER_KEY WC_CONSUMER_SECRET
 ```
 
@@ -28,13 +32,11 @@ printenv WP_USERNAME WP_APP_PASSWORD WC_CONSUMER_KEY WC_CONSUMER_SECRET
 - **WC API**: Query params `?consumer_key=...&consumer_secret=...`
 - **Base URL**: `https://agowautomation.com`
 
-## API Endpoints Nhanh
+## Công Cụ Được Phép
 
-```
-WP Posts   : GET /wp-json/wp/v2/posts?per_page=100&page=N
-WP Pages   : GET /wp-json/wp/v2/pages?per_page=100&page=N
-WP Media   : GET /wp-json/wp/v2/media?per_page=100&page=N
-WC Products: GET /wp-json/wc/v3/products?per_page=100&page=N&consumer_key=...&consumer_secret=...
-```
-
-Pagination: loop đến khi response trả về array rỗng hoặc X-WP-TotalPages đạt giới hạn.
+| ✅ Dùng | ❌ Cấm |
+|---|---|
+| `node khoa.js <cmd>` | Tự viết script curl/bash/awk/sed để parse |
+| `node script.js` custom nếu chưa có command | `python requests` (không cài sẵn) |
+| `curl` test API nhanh (1 request, không parse) | `jq` (không có trong container) |
+| `printenv VAR` | Tìm file `.env` |
