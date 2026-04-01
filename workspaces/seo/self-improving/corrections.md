@@ -22,6 +22,17 @@
 - **Đúng**: Chạy `node khoa.js check-duplicate-alt` → scan per-page → tìm đúng 3 trang có lỗi
 - **Nguyên tắc**: Duplicate alt text chỉ là lỗi khi cùng alt text xuất hiện ≥2 lần TRÊN CÙNG 1 TRANG
 
+## 2026-04-01 — fix-meta-desc.js: Script Logic Sai (Không Chỉ SKILL.md)
+
+- **Lỗi**: Sửa SKILL.md và hot.md không đủ — script `fix-meta-desc.js` vẫn hardcode CTA vì rule chỉ có trong knowledge files, không ảnh hưởng code đang chạy
+- **Root cause 1 (CTA)**: `generateProductDesc()` dòng 110-118 hardcode `const cta = 'Liên hệ...'` → append vào mọi product
+- **Root cause 2 (THIN→tệ hơn)**: Với THIN_META_DESC, script gọi `generateProductDesc()` thay vì `extendProductDesc()` → xóa content gốc 138 chars, generate lại 90 chars — **tệ hơn bản gốc**
+- **Rule học được**: Khi viết fix script, luôn phân biệt 2 case:
+  - NO_META_DESC → build từ đầu
+  - THIN_META_DESC → **extend bản gốc**, không replace
+- **Safety net thêm vào**: `if (newDesc.length < currentDesc.length) → giữ nguyên bản gốc + flag needsManual`
+- **Đã sửa**: Rewrite 3 hàm generate + processItem logic trong fix-meta-desc.js
+
 ## 2026-04-01 — Meta Description: Append CTA Là Anti-Pattern
 
 - **Task**: Fix 78 THIN_META_DESC products (102–119 chars)

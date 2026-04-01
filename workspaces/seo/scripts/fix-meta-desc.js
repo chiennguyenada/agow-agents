@@ -72,80 +72,110 @@ function checkDesc(desc) {
 }
 
 // ── Semantic description generation ──────────────────────────────────────────
-// Không gọi AI — dùng template từ dữ liệu sản phẩm thực.
-// Đủ chính xác cho 80% cases, còn lại Khoa (agent) sẽ review.
+// Nguyên tắc Semantic SEO (2026-04-01):
+//   1. THIN_META_DESC → EXTEND nội dung hiện tại, KHÔNG generate lại từ đầu
+//   2. NO_META_DESC   → build từ short_description, ưu tiên thông số kỹ thuật cụ thể
+//   3. KHÔNG append CTA chung ("Liên hệ Agow...") — tạo boilerplate cross-page
+//   4. Dùng ~40 chars còn lại để thêm SPEC kỹ thuật unique cho từng sản phẩm
+//   5. CTA chỉ dùng cho service/page, không dùng cho product detail
 
-function generateProductDesc(product) {
-  const name    = (product.name || '').trim();
+// Lấy các câu từ short_description chưa có trong existing desc
+function extractNewSpecs(existingDesc, shortDesc) {
+  if (!shortDesc) return '';
+  const existing = existingDesc.toLowerCase();
+  const sentences = shortDesc.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 15);
+  // Tìm câu chứa thông tin chưa có trong existing desc
+  const newInfo = sentences.filter(s => {
+    // Lấy các từ quan trọng (số, đơn vị, model codes) trong câu này
+    const keywords = s.match(/\b(\d+[\w\/]*|MHz|VDC|kHz|GB|MB|mm|kW|Nm|IP\d+|SIL\d|Cat\.\d|M\d+|RS\d+|USB|Ethernet|POWERLINK|PROFIBUS|Modbus|EtherNet\/IP|CANopen|X2X|SafeNODE|SafeLOGIC|PLCopen|I\/O|I\/Os)\b/gi) || [];
+    // Nếu câu có keyword kỹ thuật và keyword đó chưa có trong existing → đây là info mới
+    return keywords.some(k => !existing.includes(k.toLowerCase()));
+  });
+  return newInfo.slice(0, 2).join('. '); // tối đa 2 câu mới
+}
+
+// Nhận dạng dòng sản phẩm B&R
+function detectProductLine(name, cats) {
+  const n = name.toUpperCase();
+  const c = cats.map(c => c.toUpperCase()).join(' ');
+  if (/\bX67\b/.test(n)) return 'X67 System';
+  if (/\bX20S/.test(n)) return 'X20 Safety';
+  if (/\bX20\b/.test(n)) return 'X20 System';
+  if (/\b2003\b/.test(n) || /\b2003\b/.test(c)) return '2003 System';
+  if (/\b2005\b/.test(n) || /\b2005\b/.test(c)) return '2005 System';
+  if (/APC\d{3}|5PC\d{3}|Automation PC/i.test(n)) return 'Automation PC';
+  if (/4PP\d{3}|Power Panel/i.test(n)) return 'Power Panel';
+  if (/ACOPOS|8V\d{4}/i.test(n)) return 'ACOPOS';
+  return '';
+}
+
+// THIN_META_DESC: mở rộng bản gốc bằng specs còn thiếu
+function extendProductDesc(currentDesc, product) {
+  const rawShort = stripHtml(product.short_description || '');
+  const newSpecs = extractNewSpecs(currentDesc, rawShort);
+  if (!newSpecs) {
+    // Không tìm được spec mới → flag needsReview, trả về bản gốc để không làm xấu hơn
+    return { desc: currentDesc, needsManual: true };
+  }
+  // Ghép: bản gốc (không CTA) + spec mới
+  const base = currentDesc.replace(/\.\s*(Liên hệ|Xem thêm|Contact|Mua ngay)[^.]*\.\s*$/, '').trim();
+  let extended = base + '. ' + newSpecs;
+  if (extended.length > DESC_MAX) extended = smartTrim(extended, DESC_MAX);
+  return { desc: extended, needsManual: false };
+}
+
+// NO_META_DESC: build từ đầu từ short_description
+function buildProductDesc(product) {
+  const name    = stripHtml(product.name || '').trim();
   const cats    = (product.categories || []).map(c => c.name).filter(Boolean);
-  const rawDesc = stripHtml(product.short_description || '');
+  const rawShort = stripHtml(product.short_description || '');
+  const line    = detectProductLine(name, cats);
 
-  // Xác định dòng sản phẩm từ tên module hoặc category
-  let productLine = '';
-  if (/\bX67\b/i.test(name)) productLine = 'dòng X67';
-  else if (/\bX20\b/i.test(name)) productLine = 'dòng X20 System';
-  else if (/\b2003\b/.test(name) || cats.some(c => /2003/i.test(c))) productLine = 'dòng 2003 System';
-  else if (/\b2005\b/.test(name) || cats.some(c => /2005/i.test(c))) productLine = 'dòng 2005 System';
-  else if (/Automation PC|APC/i.test(name)) productLine = 'dòng Automation PC';
-  else if (/Power Panel|4PP/i.test(name)) productLine = 'dòng Power Panel';
+  // Ưu tiên: dùng câu đầu + câu thứ 2 của short_description (chứa spec kỹ thuật nhất)
+  const sentences = rawShort.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 15);
 
-  // Lấy câu đầu tiên của short_description (giá trị nhất)
-  const firstSentence = rawDesc ? rawDesc.split(/[.!?]/)[0].trim() : '';
-
-  // Tạo description
-  let parts = [];
-
-  if (firstSentence && firstSentence.length > 20) {
-    parts.push(firstSentence);
-    if (productLine && !firstSentence.includes(productLine.replace('dòng ', ''))) {
-      parts.push(`Thuộc ${productLine} B&R`);
+  let desc = '';
+  if (sentences.length >= 2) {
+    // Có đủ content → lấy 2 câu đầu chứa specs
+    desc = sentences.slice(0, 2).join('. ');
+    if (line && !desc.toUpperCase().includes(line.replace(' System','').replace(' Safety',''))) {
+      desc += `. Thuộc dòng ${line} B&R`;
     }
+  } else if (sentences.length === 1) {
+    desc = sentences[0];
+    if (line) desc += `. Thuộc dòng ${line} B&R Automation`;
   } else {
-    // Fallback: dùng tên sản phẩm + category
-    const catStr = cats.slice(0, 2).join(', ');
-    parts.push(`${name}${catStr ? ` – ${catStr}` : ''} của B&R Automation`);
-    if (productLine) parts.push(`Thuộc ${productLine}`);
+    // Không có short_description → dùng name + category, flag review
+    const catStr = cats.filter(c => !/hãng b&r|b&r automation/i.test(c)).slice(0, 2).join(', ');
+    desc = `${name}${catStr ? ' – ' + catStr : ''}${line ? '. Dòng ' + line + ' B&R' : ''}`;
+    return { desc: smartTrim(desc, DESC_MAX), needsManual: true };
   }
 
-  const cta = `Liên hệ ${SITE_BRAND} để được báo giá.`;
-  let desc = parts.join('. ') + '. ' + cta;
-
-  // Trim về MAX nếu quá dài (ưu tiên giữ CTA)
-  if (desc.length > DESC_MAX) {
-    // Cắt phần nội dung, giữ CTA
-    const maxContent = DESC_MAX - cta.length - 2;
-    const contentPart = smartTrim(parts.join('. '), maxContent);
-    desc = contentPart + '. ' + cta;
-  }
-
-  return desc;
+  desc = smartTrim(desc, DESC_MAX);
+  return { desc, needsManual: checkDesc(desc).issue !== null };
 }
 
 function generatePostDesc(post) {
   const title   = stripHtml(post.title?.rendered || '');
   const excerpt = stripHtml(post.excerpt?.rendered || '');
-  const rawDesc = excerpt || '';
-
-  if (rawDesc.length >= DESC_MIN) {
-    return smartTrim(rawDesc, DESC_MAX);
-  }
-
-  // Excerpt quá ngắn → dùng title + excerpt
-  const desc = rawDesc
-    ? `${rawDesc} Tìm hiểu thêm tại ${SITE_BRAND}.`
-    : `${title}. Đọc chi tiết tại blog ${SITE_BRAND}.`;
-
-  return smartTrim(desc, DESC_MAX);
+  if (excerpt.length >= DESC_MIN) return { desc: smartTrim(excerpt, DESC_MAX), needsManual: false };
+  // Ghép excerpt + title context, không CTA brand
+  const desc = excerpt
+    ? smartTrim(excerpt + '. Xem chi tiết bài viết tại Agow Automation.', DESC_MAX)
+    : smartTrim(`${title} – tìm hiểu kinh nghiệm thực tế từ đội ngũ kỹ thuật Agow Automation về thiết bị B&R.`, DESC_MAX);
+  return { desc, needsManual: checkDesc(desc).issue !== null };
 }
 
 function generatePageDesc(page) {
   const title   = stripHtml(page.title?.rendered || '');
   const excerpt = stripHtml(page.excerpt?.rendered || '');
-
-  if (excerpt.length >= DESC_MIN) return smartTrim(excerpt, DESC_MAX);
-
-  // System pages: title + brand
-  return smartTrim(`${title} – ${SITE_BRAND}. Thông tin chi tiết về dịch vụ và sản phẩm B&R Automation tại Việt Nam.`, DESC_MAX);
+  if (excerpt.length >= DESC_MIN) return { desc: smartTrim(excerpt, DESC_MAX), needsManual: false };
+  // Service/info pages: CTA phù hợp intent (người dùng đang tìm thông tin/dịch vụ)
+  const desc = smartTrim(
+    `${title} tại Agow Automation – nhà phân phối chính thức thiết bị B&R Automation tại Việt Nam. Hỗ trợ kỹ thuật, báo giá nhanh.`,
+    DESC_MAX
+  );
+  return { desc, needsManual: checkDesc(desc).issue !== null };
 }
 
 // ── Xử lý 1 item ──────────────────────────────────────────────────────────────
@@ -155,9 +185,9 @@ async function processItem(item, itemType) {
   // Lấy current meta desc
   let currentDesc = '';
   if (itemType === 'WC_PRODUCT') {
-    currentDesc = item.meta_data?.find(m => m.key === 'rank_math_description')?.value || '';
+    currentDesc = (item.meta_data?.find(m => m.key === 'rank_math_description')?.value || '').trim();
   } else {
-    currentDesc = item.meta?.rank_math_description || '';
+    currentDesc = (item.meta?.rank_math_description || '').trim();
   }
 
   const { issue, len } = checkDesc(currentDesc);
@@ -166,25 +196,45 @@ async function processItem(item, itemType) {
   const name = itemType === 'WC_PRODUCT' ? item.name : (item.title?.rendered || `ID:${id}`);
   const url  = item.link || item.permalink || '';
 
-  // Generate semantic description
+  // ── Generate semantic description theo đúng loại issue ──────────────────────
   let newDesc = '';
-  if (itemType === 'WC_PRODUCT') newDesc = generateProductDesc(item);
-  else if (itemType === 'WP_POST') newDesc = generatePostDesc(item);
-  else newDesc = generatePageDesc(item);
+  let needsManual = false;
 
-  // Validate generated desc
-  const newCheck = checkDesc(newDesc);
-  const needsReview = newCheck.issue !== null; // nếu generate ra vẫn sai thì flag
+  if (issue === 'THIN_META_DESC' && itemType === 'WC_PRODUCT') {
+    // THIN: mở rộng bản gốc, KHÔNG replace
+    const r = extendProductDesc(currentDesc, item);
+    newDesc = r.desc; needsManual = r.needsManual;
+  } else if (issue === 'NO_META_DESC' && itemType === 'WC_PRODUCT') {
+    // NO: build từ đầu từ short_description
+    const r = buildProductDesc(item);
+    newDesc = r.desc; needsManual = r.needsManual;
+  } else if (itemType === 'WP_POST') {
+    const r = generatePostDesc(item);
+    newDesc = r.desc; needsManual = r.needsManual;
+  } else {
+    const r = generatePageDesc(item);
+    newDesc = r.desc; needsManual = r.needsManual;
+  }
+
+  // Safety: không bao giờ đề xuất desc ngắn hơn bản gốc
+  if (newDesc.length < currentDesc.length && currentDesc.length > 0) {
+    needsManual = true;
+    newDesc = currentDesc; // giữ nguyên bản gốc, flag để Khoa viết tay
+  }
 
   if (DRY_RUN) {
     const issueIcon = issue === 'NO_META_DESC' ? '🔴' : '🟡';
+    const actionLabel = (issue === 'THIN_META_DESC') ? 'Mở rộng' : 'Build mới';
     console.log(`${issueIcon} ${issue} [${itemType} ${id}] (hiện tại: ${len} chars)`);
     console.log(`   Tên: "${stripHtml(name).slice(0, 60)}"`);
     console.log(`   URL: ${url}`);
-    console.log(`   → Đề xuất (${newDesc.length} chars): "${newDesc}"`);
-    if (needsReview) console.log(`   ⚠️  Đề xuất chưa đạt ${DESC_MIN}-${DESC_MAX} chars — cần Khoa review`);
+    if (issue === 'THIN_META_DESC' && currentDesc) {
+      console.log(`   Hiện tại: "${currentDesc}"`);
+    }
+    console.log(`   → ${actionLabel} (${newDesc.length} chars): "${newDesc}"`);
+    if (needsManual) console.log(`   ✏️  Cần Khoa viết tay — script không tìm được spec mới từ short_description`);
     console.log('');
-    return { issue, id, itemType, currentDesc, newDesc, url, name: stripHtml(name), needsReview };
+    return { issue, id, itemType, currentDesc, newDesc, url, name: stripHtml(name), needsReview: needsManual };
   }
 
   // ── Backup ───────────────────────────────────────────────────────────────────
@@ -210,9 +260,9 @@ async function processItem(item, itemType) {
 
   if (res && res.ok) {
     console.log(`✅ [${itemType} ${id}] "${stripHtml(name).slice(0, 50)}"`);
-    console.log(`   ${issue} (${len}) → "${newDesc}" (${newDesc.length})`);
-    if (needsReview) console.log(`   ⚠️  Nên review lại (${newDesc.length} chars)`);
-    return { issue, id, itemType, fixed: true, needsReview };
+    console.log(`   ${issue} (${len}) → (${newDesc.length}) "${newDesc}"`);
+    if (needsManual) console.log(`   ✏️  Cần review (script giữ nguyên bản gốc)`);
+    return { issue, id, itemType, fixed: true, needsReview: needsManual };
   } else {
     const errBody = res?.body;
     const hint = (res?.status === 403 || errBody?.code === 'rest_cannot_edit_meta')
