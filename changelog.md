@@ -6,6 +6,37 @@
 
 ---
 
+### 2026-04-01 — LONG_TITLE Fix Complete (8/8) — AI-Written Titles Applied
+**Phase**: 1a (SEO Production Fix)
+**Files changed**:
+- `workspaces/seo/self-improving/hot.md` — **modified** — Cập nhật Verified Findings: LONG_TITLE 0 remaining, 8/8 fixed. SHORT_TITLE 9 system pages intentionally skipped.
+- `progress.md` — **modified** — Đánh dấu tất cả title tasks hoàn thành.
+- `changelog.md` — **modified** — This entry.
+
+**Items fixed** (rank_math_title via WP/WC API):
+| ID | Type | New title (chars) |
+|----|------|-------------------|
+| POST 5096 | WP Post | "Thay thế 5PC910.SX05-00 & X20CP3583 – Máy Thổi Màng" (51) |
+| POST 3706 | WP Post | "Module X20IF2772 – Kết Nối CAN Bus Đa Năng B&R" (46) |
+| POST 1747 | WP Post | "Acopos Multi B&R – Tối Đa Hóa Lợi Ích Cho Khách Hàng" (52) |
+| POST 1919 | WP Post | "Acopos 6D – Đỉnh Cao Chuyển Động Đa Chiều Trong Sản Xuất" (56) |
+| PROD 5378 | WC Product | "Máy Tính Công Nghiệp 5APC4100.SX03-000 B&R – 3 Khe" (50) |
+| PROD 5375 | WC Product | "Máy Tính Công Nghiệp 5APC4100.SX02-000 B&R – 2 Khe" (50) |
+| PROD 5372 | WC Product | "Máy Tính Công Nghiệp 5APC4100.SX01-000 B&R – 1 Khe" (50) |
+| PROD 4575 | WC Product | "Module IO-Link Master X20DS438A B&R – 4 Cổng X20" (48) |
+| PROD 3366 | WC Product | "Module 3IF786.9 B&R – aPCI POWERLINK + RS232" (44) |
+| PROD 3364 | WC Product | "Module 3IF787.9 B&R – aPCI POWERLINK Master" (43) |
+
+**SHORT_TITLE skipped**: 9 WooCommerce system pages (Giỏ hàng, Thanh toán, Wishlist, Liên Hệ, etc.) — không ảnh hưởng SEO, Google ít index utility pages.
+
+**Why**: User chọn AI-written titles thay vì auto-truncate để giữ ý nghĩa đầy đủ. Titles được viết dựa trên nội dung thực (product name, category, short_description) từ WP/WC API.
+
+**Tests**: Layer 1: N/A | Layer 2: 10/10 API calls ✅ | Layer 3: `check-title` re-run → LONG_TITLE = 0 ✅ | Layer 4: purge-cache ✅
+**Dependencies affected**: rank_math_title meta cho 10 items. LiteSpeed cache đã purge.
+**Notes**: Workflow thực tế: check-title (scan) → AI viết title → apply manual via node -e → verify → purge. Quy trình này sẽ được chuẩn hóa vào fix-title.js --ai mode (future).
+
+---
+
 ### 2026-04-01 — Add fix-title.js: LONG_TITLE / SHORT_TITLE Detection & Auto-Fix
 **Phase**: 1a (SEO Production Fix)
 **Files changed**:

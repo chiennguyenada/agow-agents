@@ -121,10 +121,11 @@
 - [x] Create `workspaces/seo/scripts/fix-title.js` — smart-truncate LONG_TITLE, report SHORT_TITLE — 2026-04-01
 - [x] Add `check-title` + `fix-title` commands vào `khoa.js` — 2026-04-01
 - [x] Update `hot.md` — commands table 8 entries, known title issues — 2026-04-01
-- [~] Run dry-run: `node khoa.js check-title` — cần live credentials
-- [ ] Apply fix: `node khoa.js fix-title --apply`
-- [ ] Run purge-cache sau khi fix
-- [ ] Re-audit để xác nhận LONG_TITLE score cải thiện
+- [x] **Run dry-run** — 8 LONG_TITLE (auto-fixable) + 11 SHORT_TITLE (9 system pages skip) — 2026-04-01
+- [x] **Apply AI-written titles** — 10/10 ✅ (4 posts + 4 products LONG + 2 products SHORT) — 2026-04-01
+- [x] **Purge LiteSpeed cache** — PASS — 2026-04-01
+- [x] **Verify** — `check-title` re-run: LONG_TITLE = 0 ✅, SHORT_TITLE = 9 (WC system pages, intentionally skipped) — 2026-04-01
+- [ ] Re-audit để xác nhận score cải thiện
 
 ### Script Refactor: Portable wp-client.js — 2026-04-01
 - [x] Create `workspaces/seo/scripts/wp-client.js` — shared HTTP client, 100% env-based config — 2026-04-01
@@ -309,19 +310,21 @@ _Tasks to be defined when user provides business requirements_
 | 1f    | 4           | 1    | 2        | 0       | 1       |
 | **Total** | **107** | **84** | **22** | **0** | **2** |
 
-> **2026-04-01 UPDATE**: `fix-title.js` tạo xong. Scripts hiện tại: 7 files (thêm fix-title.js).
-> **Scripts hiện tại**: wp-client.js, fix-title.js, fix-missing-alt.js, fix-duplicate-alt.js, verify-alt-fix.js, purge-cache.js, khoa.js
+> **2026-04-01 UPDATE (final)**: LONG_TITLE **fully resolved** — 0 items remaining.
+> Scripts: 7 files (wp-client, fix-title, fix-missing-alt, fix-duplicate-alt, verify-alt-fix, purge-cache, khoa)
 >
-> **Next**: Chạy `check-title` (cần live WP credentials) → `fix-title --apply` → `purge-cache` → re-audit
+> **SEO Fixes Done:**
+> - MISSING_ALT: 126/126 PASS ✅
+> - DUPLICATE_ALT: 3 trang đã fix ✅
+> - LONG_TITLE: 8/8 fixed (AI-written titles) ✅
+> - SHORT_TITLE: 9 system pages intentionally skipped (không ảnh hưởng SEO)
 >
-> **Pending tasks:**
-> 1. Run `node khoa.js check-title` — scan 26 LONG/SHORT title issues
-> 2. `node khoa.js fix-title --apply` — auto-fix LONG_TITLE
-> 3. SHORT_TITLE: cần AI/human để cải thiện (không sửa tự động)
-> 4. Re-audit sau fix để verify score cải thiện
-> 5. GSC API registration (Phase 1f)
+> **Next:**
+> 1. Re-audit để verify score cải thiện sau 2 đợt fix
+> 2. SHORT_TITLE MODULE (3IF786.9, 3IF787.9) đã fix — confirm bằng check-title
+> 3. GSC API registration (Phase 1f) — xem keywords cải thiện sau fix
 >
 > **Manual blockers:**
-> 1. WordPress Application Password — đã có (dùng được)
-> 2. WooCommerce Consumer Key/Secret — cần tạo trên WC Admin nếu cần sửa WC products
-> 3. GSC API registration — Phase 1f
+> 1. WordPress Application Password — đã có ✅
+> 2. WooCommerce Consumer Key/Secret — đã có ✅
+> 3. GSC API registration — Phase 1f (pending)

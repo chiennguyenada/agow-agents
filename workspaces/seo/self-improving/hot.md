@@ -39,12 +39,14 @@
 - Đọc config từ env vars: `WP_BASE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD`, `WC_CONSUMER_KEY`, `WC_CONSUMER_SECRET`
 - KHÔNG hardcode hostname — portable cho bất kỳ WordPress site nào
 
-### Kết quả đã verify (2026-03-31):
+### Kết quả đã verify (2026-03-31 → 2026-04-01):
 - Alt text: **126/126 PASS** — toàn bộ posts/pages/products/media đều có alt text
 - Duplicate alt: đã fix trên 3 trang (Trang Chủ, PLC X20CP3583, PLC MX207)
-- Title issues: **26 URLs** có LONG_TITLE/SHORT_TITLE (theo audit 2026-03-29) — chưa fix
-  - fix-title.js: tự động sửa LONG_TITLE bằng smart-truncate (giữ suffix "| Agow Automation")
-  - SHORT_TITLE: cần AI/manual — không sửa tự động
+- Title LONG_TITLE: **0 còn lại** — 8 items đã fix với AI-written titles (2026-04-01)
+  - 4 WP posts (5096, 3706, 1747, 1919) → rank_math_title đã cập nhật
+  - 4 WC products (5378, 5375, 5372, 4575) → rank_math_title đã cập nhật
+  - 2 WC products SHORT (3366, 3364) → đã thêm context B&R + POWERLINK
+- SHORT_TITLE còn lại: 9 system pages (Giỏ hàng, Thanh toán, Wishlist...) → INTENTIONALLY SKIPPED (WooCommerce utility pages, Google không ưu tiên index)
 
 ## Critical Rules (production-proven)
 - H1 injection: Flatsome + LiteSpeed → use wp_footer PHP hook, NOT ob_start()
@@ -72,4 +74,4 @@
 - Đã báo cáo user, chờ approval để fix
 
 ## Last Updated
-2026-04-01 (added fix-title.js, updated commands table + known title issues)
+2026-04-01 (LONG_TITLE fully fixed — 8/8 items done, 0 remaining)
