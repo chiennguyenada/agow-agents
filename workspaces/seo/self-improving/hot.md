@@ -60,6 +60,9 @@
 - **Title format B&R**: `[Mã SP] [Chức năng] [Thông số kỹ thuật] [Dòng SP] B&R` — mã SP đầu tiên
 - **Title double-brand**: xóa "Hãng B&R" và "của B&R Automation Hãng B&R" — thay bằng "B&R" cuối title
 - **MISSING_TITLE**: trang /thanh-toan (ID: page) — critical, không có thẻ `<title>` — fix ngay
+- **Meta desc ngưỡng đúng**: 140–155 chars (KHÔNG phải 120) — Google hiển thị ~155 desktop, ~120 mobile
+- **Meta desc KHÔNG append CTA chung**: "Liên hệ Agow..." vào 78 sản phẩm = boilerplate, giảm uniqueness
+- **Meta desc THIN_META_DESC fix đúng**: dùng ~40 chars còn lại để thêm THÔNG SỐ KỸ THUẬT cụ thể (resolution, khe PCI, protocol, ứng dụng) — không phải CTA generic
 
 ## Baseline Metrics (post Sprint 0-2, 2026-03-22)
 - Total URLs indexed: 646

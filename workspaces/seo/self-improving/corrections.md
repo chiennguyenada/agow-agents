@@ -22,6 +22,27 @@
 - **Đúng**: Chạy `node khoa.js check-duplicate-alt` → scan per-page → tìm đúng 3 trang có lỗi
 - **Nguyên tắc**: Duplicate alt text chỉ là lỗi khi cùng alt text xuất hiện ≥2 lần TRÊN CÙNG 1 TRANG
 
+## 2026-04-01 — Meta Description: Append CTA Là Anti-Pattern
+
+- **Task**: Fix 78 THIN_META_DESC products (102–119 chars)
+- **Đề xuất sai**: Append "Liên hệ Agow để báo giá và tư vấn." vào cuối tất cả 78 sản phẩm
+- **Vấn đề**:
+  1. **Boilerplate signal**: 78 trang cùng câu kết giống nhau → Google nhận diện template, giảm uniqueness
+  2. **Intent mismatch**: Kỹ sư đang research/compare, chưa sẵn sàng mua → CTA "báo giá" sai giai đoạn
+  3. **Thông tin kỹ thuật bị lãng phí**: Thay vì append CTA, dùng ~40 chars còn lại để thêm spec kỹ thuật còn thiếu (resolution, khe PCI, protocol, ứng dụng)
+  4. **Google rewrite**: Meta không match search intent → Google tự thay bằng snippet từ content → effort thừa
+- **Đúng**: Hoàn thiện thông tin kỹ thuật còn thiếu trong 40 chars còn lại, CỤ THỂ cho từng sản phẩm
+- **Ngưỡng đúng**: 140–155 chars (không phải 120). Google hiển thị ~155 chars desktop, ~120 chars mobile.
+  - <120 chars: THIN — mất real estate trên SERP
+  - 140–155 chars: OPTIMAL — đủ thông tin, không bị cắt trên desktop
+  - >160 chars: bị Google cắt giữa chừng
+
+**Ví dụ đúng (ID 3333 Power Panel):**
+```
+Sai: "...màn hình cảm ứng điện trở. Liên hệ Agow để báo giá và tư vấn." (138, generic CTA)
+Đúng: "...màn hình cảm ứng điện trở, 800×600 pixel. Tích hợp PLC, phù hợp điều khiển và giám sát công nghiệp." (155, specific info)
+```
+
 ## 2026-04-01 — Semantic SEO Title: Truncate Cơ Học Là Sai
 
 - **Task**: Fix LONG_TITLE cho 34 sản phẩm B&R

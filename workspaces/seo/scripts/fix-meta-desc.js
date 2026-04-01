@@ -14,8 +14,9 @@
  *   Posts:    [Tóm tắt giá trị bài viết]. [Điểm nổi bật]. [CTA]
  *   Pages:    [Mô tả trang]. [Lợi ích]. [CTA]
  *
- * Target length: 120–160 chars
- * Required env: WP_BASE_URL, WP_USERNAME, WP_APP_PASSWORD
+ * Target length: 140–155 chars (Google hiển thị ~155 desktop, ~120 mobile)
+ * THIN_META_DESC: < 140 chars
+ * LONG_META_DESC: > 160 chars (bị cắt giữa chừng)
  * Optional env: WC_CONSUMER_KEY, WC_CONSUMER_SECRET
  *               META_DESC_MIN (default: 120)
  *               META_DESC_MAX (default: 160)
@@ -32,7 +33,7 @@ const DRY_RUN  = !process.argv.includes('--apply');
 const ONLY_ID  = (() => { const m = process.argv.join(' ').match(/--id=(\d+)/); return m ? parseInt(m[1]) : null; })();
 const ONLY_TYPE = (() => { const m = process.argv.join(' ').match(/--type=(\w+)/); return m ? m[1] : null; })();
 
-const DESC_MIN    = parseInt(process.env.META_DESC_MIN || '120');
+const DESC_MIN    = parseInt(process.env.META_DESC_MIN || '140');
 const DESC_MAX    = parseInt(process.env.META_DESC_MAX || '160');
 const SITE_BRAND  = process.env.SITE_BRAND || 'Agow Automation';
 const BACKUP_DIR  = path.join(__dirname, '..', 'backups');
@@ -229,7 +230,7 @@ async function main() {
     : `=== APPLY: Writing semantic meta descriptions ===`);
   if (ONLY_ID) console.log(`   Chỉ xử lý ID: ${ONLY_ID}`);
   if (ONLY_TYPE) console.log(`   Chỉ xử lý type: ${ONLY_TYPE}`);
-  console.log(`   Target: ${DESC_MIN}–${DESC_MAX} chars | Brand CTA: "${SITE_BRAND}"\n`);
+  console.log(`   Target: ${DESC_MIN}–${DESC_MAX} chars (Google: ~155 desktop, ~120 mobile)\n`);
 
   const results = { NO_META_DESC: 0, THIN_META_DESC: 0, LONG_META_DESC: 0, fixed: 0, errors: 0, needsReview: 0 };
   const items = [];
