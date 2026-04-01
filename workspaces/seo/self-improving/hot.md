@@ -25,6 +25,8 @@
 ### Commands:
 | Command | Mô tả | Có --apply? |
 |---------|--------|-------------|
+| `check-title` | Tìm LONG_TITLE/SHORT_TITLE (dry-run) | Không |
+| `fix-title` | Sửa LONG_TITLE tự động (SHORT cần manual) | Có |
 | `missing-alt` | Tìm ảnh thiếu alt (dry-run) | Không |
 | `fix-missing-alt` | Sửa alt text bị thiếu | Có |
 | `check-duplicate-alt` | Tìm duplicate alt (dry-run) | Không |
@@ -40,6 +42,9 @@
 ### Kết quả đã verify (2026-03-31):
 - Alt text: **126/126 PASS** — toàn bộ posts/pages/products/media đều có alt text
 - Duplicate alt: đã fix trên 3 trang (Trang Chủ, PLC X20CP3583, PLC MX207)
+- Title issues: **26 URLs** có LONG_TITLE/SHORT_TITLE (theo audit 2026-03-29) — chưa fix
+  - fix-title.js: tự động sửa LONG_TITLE bằng smart-truncate (giữ suffix "| Agow Automation")
+  - SHORT_TITLE: cần AI/manual — không sửa tự động
 
 ## Critical Rules (production-proven)
 - H1 injection: Flatsome + LiteSpeed → use wp_footer PHP hook, NOT ob_start()
@@ -67,4 +72,4 @@
 - Đã báo cáo user, chờ approval để fix
 
 ## Last Updated
-2026-03-31 (updated by Khoa after first verified skill run)
+2026-04-01 (added fix-title.js, updated commands table + known title issues)

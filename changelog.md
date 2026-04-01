@@ -6,7 +6,30 @@
 
 ---
 
-### 2026-03-31 — Refactor Scripts to Generic (Portable to Any WordPress Site)
+### 2026-04-01 — Add fix-title.js: LONG_TITLE / SHORT_TITLE Detection & Auto-Fix
+**Phase**: 1a (SEO Production Fix)
+**Files changed**:
+- `workspaces/seo/scripts/fix-title.js` — **created** — Detect LONG_TITLE (>60 chars) + SHORT_TITLE (<30 chars) trên posts/pages/WC products. Smart-truncate cho LONG_TITLE: giữ brand suffix "| Agow Automation", cắt tại ranh giới từ. SHORT_TITLE: chỉ report, không sửa tự động (cần AI/human). Ghi vào `meta.rank_math_title` qua WP REST API. Backup trước khi sửa. Tier 2.
+- `workspaces/seo/scripts/khoa.js` — **modified** — Thêm 2 commands: `check-title` (dry-run), `fix-title` (auto-fix LONG_TITLE). Header comment cập nhật → 8 commands tổng cộng.
+- `workspaces/seo/self-improving/hot.md` — **modified** — Cập nhật commands table: 6 → 8 entries (thêm check-title, fix-title). Thêm "Kết quả đã verify: 26 URLs có LONG_TITLE/SHORT_TITLE issues".
+- `workspaces/seo/self-improving/patterns.md` — (no change in this commit)
+- `progress.md` — **modified** — Thêm fix-title task vào Phase 1a. Next tasks updated.
+- `changelog.md` — **modified** — This entry.
+
+**Why**: Sau khi hoàn thành alt text (MISSING_ALT 126/126 PASS), task tiếp theo là title optimization (26 URLs có LONG/SHORT title theo audit 2026-03-29). fix-title.js follow cùng pattern dry-run/apply/backup như fix-missing-alt.js.
+
+**Tests**:
+- Layer 1: 2/2 PASS (`node --check fix-title.js` + `node --check khoa.js`)
+- Layer 2: 5/5 PASS (smartTruncate unit tests — long with brand, short, already-ok, Vietnamese, short-with-brand)
+- Layer 3: DEFERRED (cần live WP credentials để test API write)
+- Layer 4: khoa.js help → 8 commands đúng thứ tự
+
+**Dependencies affected**: khoa.js (updated help), hot.md (updated table), wp-technical-seo SKILL.md (LONG_TITLE procedure references script)
+**Notes**: SHORT_TITLE không sửa tự động vì cần thêm context/keywords — cần Khoa (AI) hoặc admin viết title mới. Sau khi fix → chạy `purge-cache` và re-audit để verify score cải thiện.
+
+---
+
+### 2026-04-01 — Refactor Scripts to Generic (Portable to Any WordPress Site)
 **Phase**: Code Quality
 **Files changed**:
 - `workspaces/seo/scripts/wp-client.js` — **created** — Shared HTTP client: đọc config từ env vars (`WP_BASE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD`, `WC_CONSUMER_KEY`, `WC_CONSUMER_SECRET`). Exports: `config`, `request`, `wpGet`, `wpPost`, `wpPut`, `wcRequest`, `fetchAll`. Validate required env vars on import → exit(1) với error message rõ ràng.

@@ -117,6 +117,15 @@
 - [x] Rewrite `workspaces/lead/AGENTS.md` routing rules — Rule 0: Tong silent khi @khoa trong group — 2026-03-31
 - [x] Test live: @khoa trong group → Khoa trả lời trực tiếp — PASS 2026-03-31 (confirmed working)
 
+### fix-title.js — LONG_TITLE/SHORT_TITLE — 2026-04-01
+- [x] Create `workspaces/seo/scripts/fix-title.js` — smart-truncate LONG_TITLE, report SHORT_TITLE — 2026-04-01
+- [x] Add `check-title` + `fix-title` commands vào `khoa.js` — 2026-04-01
+- [x] Update `hot.md` — commands table 8 entries, known title issues — 2026-04-01
+- [~] Run dry-run: `node khoa.js check-title` — cần live credentials
+- [ ] Apply fix: `node khoa.js fix-title --apply`
+- [ ] Run purge-cache sau khi fix
+- [ ] Re-audit để xác nhận LONG_TITLE score cải thiện
+
 ### Script Refactor: Portable wp-client.js — 2026-04-01
 - [x] Create `workspaces/seo/scripts/wp-client.js` — shared HTTP client, 100% env-based config — 2026-04-01
 - [x] Refactor `fix-missing-alt.js` — dùng wp-client, BRAND_NAME auto-detect từ domain — 2026-04-01
@@ -300,15 +309,17 @@ _Tasks to be defined when user provides business requirements_
 | 1f    | 4           | 1    | 2        | 0       | 1       |
 | **Total** | **107** | **84** | **22** | **0** | **2** |
 
-> **2026-04-01 UPDATE**: Scripts đã refactor hoàn toàn portable (wp-client.js). Self-improving memory (hot.md, patterns.md) đã cập nhật với lessons mới. 
-> **Scripts hiện tại**: 6 files: wp-client.js, fix-missing-alt.js, fix-duplicate-alt.js, verify-alt-fix.js, purge-cache.js, khoa.js
+> **2026-04-01 UPDATE**: `fix-title.js` tạo xong. Scripts hiện tại: 7 files (thêm fix-title.js).
+> **Scripts hiện tại**: wp-client.js, fix-title.js, fix-missing-alt.js, fix-duplicate-alt.js, verify-alt-fix.js, purge-cache.js, khoa.js
 >
-> **Next skill**: `fix-title.js` — sửa LONG_TITLE/SHORT_TITLE (26 URLs) theo cùng pattern: dry-run + apply + verify + purge-cache
+> **Next**: Chạy `check-title` (cần live WP credentials) → `fix-title --apply` → `purge-cache` → re-audit
 >
 > **Pending tasks:**
-> 1. Re-audit để verify MISSING_ALT score cải thiện (LESSON-004: no stale data)
-> 2. Build `fix-title.js` — title inconsistency fix (P2, 26 URLs)
-> 3. GSC API registration (Phase 1f)
+> 1. Run `node khoa.js check-title` — scan 26 LONG/SHORT title issues
+> 2. `node khoa.js fix-title --apply` — auto-fix LONG_TITLE
+> 3. SHORT_TITLE: cần AI/human để cải thiện (không sửa tự động)
+> 4. Re-audit sau fix để verify score cải thiện
+> 5. GSC API registration (Phase 1f)
 >
 > **Manual blockers:**
 > 1. WordPress Application Password — đã có (dùng được)
