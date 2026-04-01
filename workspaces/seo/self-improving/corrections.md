@@ -22,6 +22,19 @@
 - **Đúng**: Chạy `node khoa.js check-duplicate-alt` → scan per-page → tìm đúng 3 trang có lỗi
 - **Nguyên tắc**: Duplicate alt text chỉ là lỗi khi cùng alt text xuất hiện ≥2 lần TRÊN CÙNG 1 TRANG
 
+## 2026-04-01 — Semantic SEO Title: Truncate Cơ Học Là Sai
+
+- **Task**: Fix LONG_TITLE cho 34 sản phẩm B&R
+- **Lỗi lần 1**: Đề xuất title bằng cách chỉ bỏ "Hãng B&R" / "của B&R Automation Hãng B&R" ở cuối
+  - Ví dụ sai: `"Module I/O Số X67DM1321.L08 của B&R Automation Hãng B&R"` → `"Module I/O Số X67DM1321.L08 | B&R Automation"` (47 ký tự)
+  - Vẫn đúng kỹ thuật nhưng không có semantic keyword → không khác gì truncate cơ học
+- **Feedback của admin**: "title chưa tối ưu, cần đặt tiêu đề làm sao cho chuẩn SEO semantic và phù hợp nhất với sản phẩm và nội dung sản phẩm"
+- **Lỗi gốc**: Chưa đọc nội dung sản phẩm trước khi đề xuất title — chỉ dựa vào tên sản phẩm
+- **Đúng**: Fetch `short_description` → hiểu chức năng thực → đặt keyword người dùng search ở đầu
+  - Ví dụ đúng: `"X67DI1371.L12 Module Đầu Vào Số 16 Kênh M12 B&R"` (50 ký tự)
+  - Keyword người dùng: "Module Đầu Vào Số" + "16 Kênh" + "M12" → đúng intent kỹ sư tìm kiếm
+- **Nguyên tắc**: LONG_TITLE workflow bắt buộc: check-title → fetch description → đề xuất semantic title → admin duyệt → apply. KHÔNG bao giờ auto-truncate rồi apply trực tiếp.
+
 ## 2026-03-22 — Title Format Correction
 - **URL**: https://agowautomation.com/thiet-bi-hang-br
 - **Trước**: Thiết bị B&R Automation chuyên nghiệp

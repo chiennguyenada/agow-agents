@@ -56,7 +56,10 @@
 - Product schema: use JS template, do NOT call AI (saves cost)
 - After deploying any snippet: purge LiteSpeed Cache before verifying changes
 - Alt text dedup: phải check per-page — duplicate cross-site KHÔNG phải lỗi
-- Title format: use dash separator (e.g., "B&R Automation – PLC, Servo, HMI")
+- **Title KHÔNG truncate cơ học** — LUÔN fetch short_description trước khi đề xuất title mới
+- **Title format B&R**: `[Mã SP] [Chức năng] [Thông số kỹ thuật] [Dòng SP] B&R` — mã SP đầu tiên
+- **Title double-brand**: xóa "Hãng B&R" và "của B&R Automation Hãng B&R" — thay bằng "B&R" cuối title
+- **MISSING_TITLE**: trang /thanh-toan (ID: page) — critical, không có thẻ `<title>` — fix ngay
 
 ## Baseline Metrics (post Sprint 0-2, 2026-03-22)
 - Total URLs indexed: 646
@@ -74,4 +77,4 @@
 - Đã báo cáo user, chờ approval để fix
 
 ## Last Updated
-2026-04-01 (LONG_TITLE fully fixed — 8/8 items done, 0 remaining)
+2026-04-01 — Semantic SEO title rules added (corrections.md + patterns.md cũng đã update)
