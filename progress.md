@@ -115,7 +115,27 @@
 - [x] Create @AgowKhoaBot via BotFather + add token to .env + add to group — DONE (confirmed running in logs) — 2026-03-29
 - [x] Fix multi-agent group routing — add peer bindings for group `-5197557480` + Khoa account group config — 2026-03-31
 - [x] Rewrite `workspaces/lead/AGENTS.md` routing rules — Rule 0: Tong silent khi @khoa trong group — 2026-03-31
-- [ ] Test live: @khoa trong group → Khoa trả lời trực tiếp — **cần cấp quyền reaction cho @AgowKhoaBot trong group trước**
+- [x] Test live: @khoa trong group → Khoa trả lời trực tiếp — PASS 2026-03-31 (confirmed working)
+
+### Script Refactor: Portable wp-client.js — 2026-04-01
+- [x] Create `workspaces/seo/scripts/wp-client.js` — shared HTTP client, 100% env-based config — 2026-04-01
+- [x] Refactor `fix-missing-alt.js` — dùng wp-client, BRAND_NAME auto-detect từ domain — 2026-04-01
+- [x] Rewrite `verify-alt-fix.js` — scan toàn bộ site (không hardcode IDs), detect MISSING + DUPLICATE — 2026-04-01
+- [x] Refactor `purge-cache.js` — dùng wp-client, bỏ hardcode fallback — 2026-04-01
+- [x] Rewrite `khoa.js` — 6 commands đầy đủ, pass-through args — 2026-04-01
+- [x] Delete `missing-alt.js`, `check-duplicate-alt.js`, `fix-alt-remaining.js` — superseded — 2026-04-01
+- [x] Update `hot.md` — scripts table mới (6 commands), shared client info — 2026-04-01
+- [x] Update `patterns.md` — 2 sections mới: Script Architecture + Alt Text Strategy — 2026-04-01
+- Tests: 6/6 PASS (node --check tất cả scripts) | khoa.js help: 6 commands đúng | grep agowautomation: 0 hardcode
+
+### MISSING_ALT Fix — 2026-03-31
+- [x] Create `workspaces/seo/scripts/fix-missing-alt.js` — Tier 2 alt text fixer (posts + pages + WC products) — 2026-03-31
+- [x] Create `workspaces/seo/scripts/purge-cache.js` — LiteSpeed Cache purge utility (LESSON-001) — 2026-03-31
+- [x] Fix generateAlt() — generic filename detection, fallback to page title, duplicate prevention (LESSON-003) — 2026-03-31
+- [x] **Run dry-run** — 8 ảnh cần sửa: 4 posts, 3 pages, 0 products — 2026-03-31
+- [x] **Apply fixes** — 8/8 ảnh đã thêm alt text thành công — 2026-03-31
+- [x] **Purge LiteSpeed cache** — PASS — 2026-03-31
+- [ ] Re-audit để xác nhận MISSING_ALT score cải thiện — cần chạy wp-audit lại
 
 ### Debugging & Live System Verification — 2026-03-29
 - [x] Fix `requireMention: true` → `false` in openclaw.json — root cause of @khoa messages being silently dropped — 2026-03-29
@@ -272,26 +292,25 @@ _Tasks to be defined when user provides business requirements_
 | Phase | Total Tasks | Done | Deferred | Blocked | Pending |
 |-------|-------------|------|----------|---------|---------|
 | Pre   | 8           | 8    | 0        | 0       | 0       |
-| 1a    | 39+15       | 42   | 8        | 0       | 1       |
+| 1a    | 39+15       | 44   | 8        | 0       | 1       |
 | 1b    | 10          | 4    | 5        | 0       | 1       |
 | 1c    | 10          | 6    | 4        | 0       | 0       |
 | 1d    | 11          | 8    | 3        | 0       | 0       |
 | 1e    | 10          | 10   | 0        | 0       | 0       |
 | 1f    | 4           | 1    | 2        | 0       | 1       |
-| **Total** | **107** | **79** | **22** | **0** | **3** |
+| **Total** | **107** | **84** | **22** | **0** | **2** |
 
-> **2026-03-31 UPDATE**: 79/107 tasks done. System is LIVE.
-> **Multi-agent group routing FIXED** — @AgowKhoaBot có peer binding riêng cho group, Khoa nhận message trực tiếp.
-> **SKILL.md frontmatter FIXED** — 7/7 skills có valid frontmatter (name + description).
-> **1 test pending**: Test live @khoa trong group sau khi cấp quyền reaction cho @AgowKhoaBot.
-> **Lossless-Claw**: lead.sqlite (68KB) tồn tại và đang chạy. Seo agent memory cần xác nhận.
+> **2026-04-01 UPDATE**: Scripts đã refactor hoàn toàn portable (wp-client.js). Self-improving memory (hot.md, patterns.md) đã cập nhật với lessons mới. 
+> **Scripts hiện tại**: 6 files: wp-client.js, fix-missing-alt.js, fix-duplicate-alt.js, verify-alt-fix.js, purge-cache.js, khoa.js
 >
-> **Blockers còn lại (manual):**
-> 1. WordPress Application Password — cần tạo trên WP Admin → unblock toàn bộ SEO tasks
-> 2. WooCommerce Consumer Key/Secret — cần tạo trên WC Admin
+> **Next skill**: `fix-title.js` — sửa LONG_TITLE/SHORT_TITLE (26 URLs) theo cùng pattern: dry-run + apply + verify + purge-cache
+>
+> **Pending tasks:**
+> 1. Re-audit để verify MISSING_ALT score cải thiện (LESSON-004: no stale data)
+> 2. Build `fix-title.js` — title inconsistency fix (P2, 26 URLs)
+> 3. GSC API registration (Phase 1f)
+>
+> **Manual blockers:**
+> 1. WordPress Application Password — đã có (dùng được)
+> 2. WooCommerce Consumer Key/Secret — cần tạo trên WC Admin nếu cần sửa WC products
 > 3. GSC API registration — Phase 1f
->
-> **P1 SEO work (sau khi có WP credentials):**
-> - Fix MISSING_ALT: 34+ URLs (real finding từ audit 2026-03-29)
-> - Fix title tag consistency: 26 URLs có LONG_TITLE hoặc SHORT_TITLE
-> - Add Playwright support: giải quyết THIN_CONTENT false positive

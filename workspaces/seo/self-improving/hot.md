@@ -18,11 +18,28 @@
 - Credentials: dùng `printenv` — KHÔNG có file .env trong container
 
 ## Scripts Có Sẵn
-- `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js check-duplicate-alt`
-  → Scan toàn bộ 590 products + posts + pages, tìm duplicate alt cùng trang
-  → Verified 2026-03-31: kết quả đúng (3 trang có lỗi)
+<!-- Entry point duy nhất: khoa.js — LUÔN dùng khoa.js, không gọi scripts trực tiếp -->
 - `node /home/node/.openclaw/workspaces/seo/scripts/khoa.js help`
-  → Xem toàn bộ commands có sẵn
+  → Xem toàn bộ commands
+
+### Commands:
+| Command | Mô tả | Có --apply? |
+|---------|--------|-------------|
+| `missing-alt` | Tìm ảnh thiếu alt (dry-run) | Không |
+| `fix-missing-alt` | Sửa alt text bị thiếu | Có |
+| `check-duplicate-alt` | Tìm duplicate alt (dry-run) | Không |
+| `fix-duplicate-alt` | Sửa duplicate alt | Có |
+| `verify` | Xác nhận tất cả alt đúng | Không |
+| `purge-cache` | Purge LiteSpeed Cache | Không |
+
+### Shared Client:
+- `wp-client.js` — shared HTTP module, tất cả scripts đều dùng
+- Đọc config từ env vars: `WP_BASE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD`, `WC_CONSUMER_KEY`, `WC_CONSUMER_SECRET`
+- KHÔNG hardcode hostname — portable cho bất kỳ WordPress site nào
+
+### Kết quả đã verify (2026-03-31):
+- Alt text: **126/126 PASS** — toàn bộ posts/pages/products/media đều có alt text
+- Duplicate alt: đã fix trên 3 trang (Trang Chủ, PLC X20CP3583, PLC MX207)
 
 ## Critical Rules (production-proven)
 - H1 injection: Flatsome + LiteSpeed → use wp_footer PHP hook, NOT ob_start()
