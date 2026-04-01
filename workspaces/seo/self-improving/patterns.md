@@ -9,9 +9,12 @@
 - Product pages: include B&R part number, Vietnamese description, technical specs, application scenarios
 
 ## Meta Optimization
-- Title: ≤60 chars, primary keyword first, brand last, dash separator
-- Description: ≤160 chars, include call-to-action in Vietnamese
-- Focus keyword: match main H1 keyword
+- Title: ≤60 chars, primary keyword first, brand last, dash separator (xem Semantic SEO Title Formula bên dưới)
+- Description: **140–155 chars** optimal (Google: ~155 desktop, ~120 mobile; >160 bị cắt)
+  - THIN = <140 chars → thêm thông số kỹ thuật cụ thể, KHÔNG append CTA chung
+  - Mỗi trang phải có ít nhất 1 thông tin UNIQUE — tránh boilerplate 78 trang cùng câu kết
+  - CTA chỉ dùng khi phù hợp intent (service page OK, product detail page thường không cần)
+- Focus keyword: match main H1 keyword, xuất hiện tự nhiên trong nội dung
 
 ## Semantic SEO Title Formula — B&R Products (learned 2026-04-01)
 

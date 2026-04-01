@@ -90,10 +90,19 @@ BƯỚC 1 — Xác định intent và USP (Unique Selling Point) của trang
   - Post: giá trị bài viết mang lại cho người đọc
   - Service: lợi ích dịch vụ + phạm vi
 
-BƯỚC 2 — Viết meta description semantic:
-  Formula: [Chức năng/Chủ đề] [Thông số/Điểm nổi bật]. [CTA bằng tiếng Việt]
-  - 120–160 chars | focus keyword tự nhiên | CTA cuối ("Liên hệ", "Xem ngay", "Báo giá")
-  - KHÔNG: "Trang này nói về..." / "Đây là..." / keyword nhồi nhét
+BƯỚC 2 — Viết meta description semantic (KHÔNG append CTA chung):
+  Target: 140–155 chars (Google hiển thị ~155 desktop, ~120 mobile — >160 bị cắt)
+  
+  ❌ KHÔNG làm:
+  - Append "Liên hệ Agow để báo giá." vào cuối hàng loạt → boilerplate signal, Google rewrite
+  - Dùng "Trang này nói về..." / "Đây là..." / keyword nhồi nhét
+  - Cùng câu CTA cho 10+ sản phẩm → giảm uniqueness
+
+  ✅ ĐÚNG — dùng ~40 chars còn lại để thêm THÔNG SỐ KỸ THUẬT cụ thể:
+  - Product đang THIN (102–139 chars): thêm spec còn thiếu (resolution, số khe, giao thức, ứng dụng)
+  - Mỗi sản phẩm phải có ít nhất 1 thông tin UNIQUE không lặp lại ở sản phẩm khác
+  - CTA chỉ dùng khi còn đủ chỗ VÀ phù hợp intent (service page: OK, product detail: thường không cần)
+  - focus keyword xuất hiện tự nhiên trong nội dung kỹ thuật
 
 BƯỚC 3 — Đề xuất cho admin duyệt (Tier 2: áp dụng rồi notify, undo trong 24h)
 

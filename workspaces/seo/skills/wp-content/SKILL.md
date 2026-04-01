@@ -50,7 +50,7 @@ For completely new posts/pages:
 2. Research via product-catalog.md + existing site content
 3. Create outline first → confirm with admin if complex
 4. Write full article (target: 1000-1500 words)
-5. Generate meta title (≤60 chars), description (≤160 chars), focus keyword
+5. Generate meta title (≤60 chars), description (140–155 chars, thông số kỹ thuật cụ thể, KHÔNG CTA chung), focus keyword
 6. Create as DRAFT — never auto-publish
 
 ## Content Quality Checks

@@ -37,7 +37,7 @@ For each URL, fetch HTML and extract:
 | Title tag exists | `<title>` | 15 | MISSING_TITLE |
 | Title length 30-60 chars | `<title>` | 5 | SHORT_TITLE / LONG_TITLE |
 | Meta description exists | `<meta name="description">` | 10 | NO_META_DESC |
-| Meta desc 120-160 chars | `<meta name="description">` | 5 | THIN_META_DESC |
+| Meta desc 140–155 chars | `<meta name="description">` | 5 | THIN_META_DESC |
 | H1 exists | `<h1>` | 10 | NO_H1 |
 | Single H1 | `<h1>` count | 5 | MULTIPLE_H1 |
 | Content word count > 300 | Body text | 15 | THIN_CONTENT |

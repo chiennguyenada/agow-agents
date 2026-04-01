@@ -57,7 +57,7 @@ Pagination: ?per_page=100&page=N — loop đến hết (590 products tổng)
 ### RankMath SEO Meta Fields
 ```
 rank_math_title          — SEO title (≤60 chars)
-rank_math_description    — Meta description (≤160 chars)
+rank_math_description    — Meta description (140–155 chars optimal; <140=THIN, >160=bị Google cắt)
 rank_math_focus_keyword  — Primary keyword
 ```
 **CRITICAL**: Cần PHP snippet `register_post_meta()` + `register_term_meta()` via WPCode.

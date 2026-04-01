@@ -51,8 +51,8 @@ Based on: `28-auditwebagow/seo_agent.py` (tasks T01-T08)
 ### T05: Auto-Fix Meta Issues (Tier 2)
 For top priority pages in fix queue:
 - Fix MISSING_TITLE → generate from H1 + focus keyword
-- Fix NO_META_DESC → generate from content summary
-- Fix THIN_META_DESC → expand existing description
+- Fix NO_META_DESC → fetch short_description → viết semantic desc 140–155 chars (thông số kỹ thuật cụ thể, KHÔNG phải CTA chung)
+- Fix THIN_META_DESC → xem nội dung còn thiếu gì → thêm spec kỹ thuật cụ thể để đạt 140–155 chars (KHÔNG append "Liên hệ Agow..." hàng loạt)
 - Fix NO_FOCUS_KEYWORD → suggest based on content analysis
 - Fix MISSING_ALT → generate descriptive alt text (check for duplicates!)
 - Each fix: backup → fix → purge cache → verify → log
