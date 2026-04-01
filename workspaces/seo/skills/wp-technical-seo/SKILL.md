@@ -35,25 +35,72 @@ Handle technical SEO fixes: meta tags, schema markup, H1 tags, canonical URLs, a
 - Modify sitemap inclusion/exclusion
 - Bulk technical fixes (>10 pages)
 
+## Semantic SEO Principles (2026-04-01)
+
+> Áp dụng cho MỌI fix trong skill này. Không viết content cơ học — phải hiểu intent người dùng.
+
+### Nguyên tắc cốt lõi
+- **User intent first**: Viết cho người tìm kiếm, không phải cho bot. Hỏi: "Người dùng gõ gì để tìm trang này?"
+- **Fetch trước, viết sau**: Luôn đọc `short_description` / `content` / `excerpt` trước khi tạo meta bất kỳ
+- **Keyword tự nhiên**: Từ khóa xuất hiện tự nhiên trong context, không nhồi nhét
+- **Đặc tả kỹ thuật là keyword**: Với B&R products, thông số (16 kênh, M12, EtherNet/IP, 2003 System) là keyword người kỹ sư search
+
+### Formula Semantic Meta theo loại trang
+| Loại trang | Intent người dùng | Formula meta desc |
+|------------|------------------|-------------------|
+| WC Product (module) | "Tôi cần module [chức năng] cho hệ thống [dòng SP]" | `[Chức năng] [Mã SP] [Thông số kỹ thuật]. Thuộc dòng [X67/X20/2003]. Liên hệ Agow để báo giá.` |
+| WC Product (PLC/HMI) | "Tôi cần PLC [đặc điểm] thay thế/mới" | `PLC [Mã] [Đặc điểm nổi bật]. [Ứng dụng phù hợp]. Agow Automation – nhà phân phối B&R tại VN.` |
+| Blog post | "Tôi muốn hiểu [chủ đề]" | `[Tóm tắt chủ đề chính]. [Điểm nổi bật bài viết]. [CTA: Đọc thêm / Tìm hiểu].` |
+| Service page | "Tôi cần dịch vụ [X]" | `Dịch vụ [tên] cho thiết bị B&R. [Lợi ích chính]. Liên hệ Agow Automation.` |
+| Category page | "Tôi tìm [loại sản phẩm] B&R" | `Danh mục [tên] B&R Automation tại Agow. [Số lượng / đặc điểm]. Báo giá nhanh.` |
+
 ## Fix Procedures
 
 ### MISSING_TITLE / SHORT_TITLE / LONG_TITLE
 ```
-1. Read current title and content
-2. Generate SEO title: {Primary Keyword} - {Secondary Info} | Agow Automation
-3. Ensure ≤60 characters
-4. PUT /wp-json/wp/v2/{type}/{id} with meta.rank_math_title
-5. Purge LiteSpeed cache
-6. Verify via re-crawl
+BƯỚC 0 — Fetch nội dung trước:
+  - WC product: GET /wp-json/wc/v3/products/{id} → đọc name, short_description, categories
+  - WP post/page: GET /wp-json/wp/v2/{type}/{id} → đọc title, excerpt, content (500 từ đầu)
+
+BƯỚC 1 — Xác định intent: người dùng search gì để tìm trang này?
+  - B&R product: [Mã SP] + [Chức năng] + [Thông số kỹ thuật] + [Dòng SP]
+  - Blog: [Chủ đề chính] + [Lợi ích độc giả]
+
+BƯỚC 2 — Viết title semantic (KHÔNG truncate cơ học):
+  Format chuẩn B&R: [Mã SP] [Loại thiết bị] [Đặc điểm kỹ thuật] [Dòng SP] B&R
+  - ≤60 chars | mã SP đầu tiên | brand cuối | KHÔNG "Hãng B&R" / "của B&R Automation Hãng B&R"
+
+BƯỚC 3 — Đề xuất cho admin duyệt (KHÔNG tự apply khi batch >10 items)
+
+BƯỚC 4 — PUT /wp-json/wp/v2/{type}/{id} với meta.rank_math_title
+BƯỚC 5 — Purge LiteSpeed cache
+BƯỚC 6 — Verify via re-crawl
+
+Script: node khoa.js check-title / fix-title [--apply] [--id=N]
 ```
 
 ### NO_META_DESC / THIN_META_DESC
 ```
-1. Read page content (first 500 words)
-2. Generate description: summarize value proposition + call to action
-3. Ensure 120-160 characters, include focus keyword
-4. PUT meta.rank_math_description
-5. Purge cache + verify
+BƯỚC 0 — Fetch nội dung trước:
+  - WC product: name + short_description + categories[].name
+  - WP post/page: excerpt.rendered + content (200 từ đầu) + title
+
+BƯỚC 1 — Xác định intent và USP (Unique Selling Point) của trang
+  - Product: đặc điểm kỹ thuật chính + ứng dụng + dòng sản phẩm
+  - Post: giá trị bài viết mang lại cho người đọc
+  - Service: lợi ích dịch vụ + phạm vi
+
+BƯỚC 2 — Viết meta description semantic:
+  Formula: [Chức năng/Chủ đề] [Thông số/Điểm nổi bật]. [CTA bằng tiếng Việt]
+  - 120–160 chars | focus keyword tự nhiên | CTA cuối ("Liên hệ", "Xem ngay", "Báo giá")
+  - KHÔNG: "Trang này nói về..." / "Đây là..." / keyword nhồi nhét
+
+BƯỚC 3 — Đề xuất cho admin duyệt (Tier 2: áp dụng rồi notify, undo trong 24h)
+
+BƯỚC 4 — PUT meta.rank_math_description
+BƯỚC 5 — Purge cache + verify
+
+Script: node khoa.js check-meta / fix-meta [--apply] [--id=N]
 ```
 
 ### NO_H1

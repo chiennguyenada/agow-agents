@@ -40,13 +40,13 @@
 - KHÔNG hardcode hostname — portable cho bất kỳ WordPress site nào
 
 ### Kết quả đã verify (2026-03-31 → 2026-04-01):
-- Alt text: **126/126 PASS** — toàn bộ posts/pages/products/media đều có alt text
-- Duplicate alt: đã fix trên 3 trang (Trang Chủ, PLC X20CP3583, PLC MX207)
-- Title LONG_TITLE: **0 còn lại** — 8 items đã fix với AI-written titles (2026-04-01)
-  - 4 WP posts (5096, 3706, 1747, 1919) → rank_math_title đã cập nhật
-  - 4 WC products (5378, 5375, 5372, 4575) → rank_math_title đã cập nhật
-  - 2 WC products SHORT (3366, 3364) → đã thêm context B&R + POWERLINK
-- SHORT_TITLE còn lại: 9 system pages (Giỏ hàng, Thanh toán, Wishlist...) → INTENTIONALLY SKIPPED (WooCommerce utility pages, Google không ưu tiên index)
+- Alt text: **126/126 PASS** ✅
+- Duplicate alt: đã fix trên 3 trang ✅
+- Title LONG_TITLE: **0 còn lại** ✅ — 42 items fixed (8 items session trước + 34 items 2026-04-01)
+- Meta desc posts: **0 issues** ✅
+- Meta desc pages: **9 issues** (8 NO + 1 THIN) — 5 cần Khoa review, 4 là WC system pages
+- Meta desc products: **89 THIN_META_DESC**, 0 NO — 17 cần Khoa review, 72 auto-fixable
+- SHORT_TITLE system pages: 9 — intentionally skipped
 
 ## Critical Rules (production-proven)
 - H1 injection: Flatsome + LiteSpeed → use wp_footer PHP hook, NOT ob_start()
@@ -77,4 +77,4 @@
 - Đã báo cáo user, chờ approval để fix
 
 ## Last Updated
-2026-04-01 — Semantic SEO title rules added (corrections.md + patterns.md cũng đã update)
+2026-04-01 — fix-meta-desc.js built, Semantic SEO principles added to wp-technical-seo SKILL.md

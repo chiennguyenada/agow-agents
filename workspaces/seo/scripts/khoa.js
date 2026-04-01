@@ -33,6 +33,16 @@ const command = process.argv[2];
 const extraArgs = process.argv.slice(3); // pass-through: --apply, --dry-run, --id=N, etc.
 
 const COMMANDS = {
+  'check-meta': {
+    script: 'fix-meta-desc.js',
+    desc: 'Tìm NO_META_DESC/THIN_META_DESC + đề xuất semantic desc (dry-run)',
+    defaultArgs: [],
+  },
+  'fix-meta': {
+    script: 'fix-meta-desc.js',
+    desc: 'Ghi meta description. Thêm --apply để ghi thật, --id=N, --type=post|page|product',
+    defaultArgs: [],
+  },
   'check-title': {
     script: 'fix-title.js',
     desc: 'Tìm title bị LONG_TITLE/SHORT_TITLE (dry-run, không sửa)',
@@ -81,12 +91,14 @@ if (!command || command === 'help') {
     console.log(`  node khoa.js ${cmd.padEnd(25)} ${info.desc}`);
   });
   console.log('\nWorkflow mẫu:');
-  console.log('  node khoa.js check-title           # Kiểm tra title');
-  console.log('  node khoa.js fix-title --apply      # Sửa LONG_TITLE');
-  console.log('  node khoa.js missing-alt            # Kiểm tra alt text');
-  console.log('  node khoa.js fix-missing-alt --apply # Sửa alt text');
-  console.log('  node khoa.js verify                  # Xác nhận kết quả');
-  console.log('  node khoa.js purge-cache             # Purge cache');
+  console.log('  node khoa.js check-meta            # 1. Kiểm tra meta description');
+  console.log('  node khoa.js fix-meta --apply       # 2. Ghi meta desc');
+  console.log('  node khoa.js check-title            # 3. Kiểm tra title');
+  console.log('  node khoa.js fix-title --apply      # 4. Sửa LONG_TITLE');
+  console.log('  node khoa.js missing-alt            # 5. Kiểm tra alt text');
+  console.log('  node khoa.js fix-missing-alt --apply # 6. Sửa alt text');
+  console.log('  node khoa.js verify                  # 7. Xác nhận');
+  console.log('  node khoa.js purge-cache             # 8. Purge cache');
   process.exit(0);
 }
 
