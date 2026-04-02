@@ -9,10 +9,12 @@
  *   node fix-meta-desc.js --id=123     # chỉ xử lý 1 item
  *   node fix-meta-desc.js --type=post  # chỉ xử lý posts (post|page|product)
  *
- * Semantic SEO meta description formula:
- *   Products: [Chức năng] [Mã SP] [Thông số kỹ thuật]. [Dòng SP]. [CTA]
- *   Posts:    [Tóm tắt giá trị bài viết]. [Điểm nổi bật]. [CTA]
- *   Pages:    [Mô tả trang]. [Lợi ích]. [CTA]
+ * Semantic SEO meta description formula (2026-04-01):
+ *   THIN_META_DESC → EXTEND bản gốc (thêm spec kỹ thuật còn thiếu, KHÔNG replace)
+ *   NO_META_DESC   → BUILD từ short_description (2 câu đầu chứa spec kỹ thuật)
+ *   KHÔNG append CTA chung ("Liên hệ Agow...") cho products — boilerplate signal
+ *   CTA chỉ dùng cho page/service descriptions (intent phù hợp)
+ *   Target: 140–155 chars. Safety: không bao giờ đề xuất ngắn hơn bản gốc.
  *
  * Target length: 140–155 chars (Google hiển thị ~155 desktop, ~120 mobile)
  * THIN_META_DESC: < 140 chars

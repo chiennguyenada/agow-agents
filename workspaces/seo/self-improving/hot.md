@@ -25,6 +25,8 @@
 ### Commands:
 | Command | Mô tả | Có --apply? |
 |---------|--------|-------------|
+| `check-meta` | Tìm NO_META_DESC/THIN_META_DESC + đề xuất semantic (dry-run) | Không |
+| `fix-meta` | Ghi meta description. --apply, --id=N, --type=post\|page\|product | Có |
 | `check-title` | Tìm LONG_TITLE/SHORT_TITLE (dry-run) | Không |
 | `fix-title` | Sửa LONG_TITLE tự động (SHORT cần manual) | Có |
 | `missing-alt` | Tìm ảnh thiếu alt (dry-run) | Không |
@@ -34,18 +36,32 @@
 | `verify` | Xác nhận tất cả alt đúng | Không |
 | `purge-cache` | Purge LiteSpeed Cache | Không |
 
+### ⚠️ Script Version Log — ĐỌC TRƯỚC KHI TỰ PHÁN ĐOÁN
+> Khi corrections.md ghi "script X sai" — kiểm tra version log dưới đây để biết đã sửa chưa.
+> ĐỪNG tự viết lại script khi chưa xác nhận version hiện tại.
+
+| Script | Version | Ngày | Logic chính | Trạng thái |
+|--------|---------|------|-------------|------------|
+| `fix-meta-desc.js` | v2 | 2026-04-01 | THIN→extend bản gốc; NO→build từ short_desc; KHÔNG CTA product | ✅ ĐÃ SỬA |
+| `fix-title.js` | v1 | 2026-04-01 | Fetch short_desc → semantic title [Mã SP][Chức năng][Spec][Dòng] B&R | ✅ OK |
+| `fix-missing-alt.js` | v1 | 2026-03-31 | Generate từ product name + context | ✅ OK |
+| `fix-duplicate-alt.js` | v1 | 2026-03-31 | Per-page dedup với suffix phân biệt | ✅ OK |
+
+**Cách verify script trước khi dùng**: `node khoa.js check-meta --id=3333 --type=product`
+→ Nếu output KHÔNG có "Liên hệ Agow để được báo giá" ở cuối → script v2 đang chạy đúng
+
 ### Shared Client:
 - `wp-client.js` — shared HTTP module, tất cả scripts đều dùng
 - Đọc config từ env vars: `WP_BASE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD`, `WC_CONSUMER_KEY`, `WC_CONSUMER_SECRET`
 - KHÔNG hardcode hostname — portable cho bất kỳ WordPress site nào
 
-### Kết quả đã verify (2026-03-31 → 2026-04-01):
+### Kết quả đã verify (2026-03-31 → 2026-04-02):
 - Alt text: **126/126 PASS** ✅
 - Duplicate alt: đã fix trên 3 trang ✅
-- Title LONG_TITLE: **0 còn lại** ✅ — 42 items fixed (8 items session trước + 34 items 2026-04-01)
+- Title LONG_TITLE: **0 còn lại** ✅ — 42 items fixed
 - Meta desc posts: **0 issues** ✅
-- Meta desc pages: **9 issues** (8 NO + 1 THIN) — 5 cần Khoa review, 4 là WC system pages
-- Meta desc products: **89 THIN_META_DESC**, 0 NO — 17 cần Khoa review, 72 auto-fixable
+- Meta desc pages: **9 issues** (8 NO + 1 THIN) — pending fix
+- Meta desc products: **~380 THIN_META_DESC** — script v2 sẵn sàng, chờ approval
 - SHORT_TITLE system pages: 9 — intentionally skipped
 
 ## Critical Rules (production-proven)
@@ -80,4 +96,4 @@
 - Đã báo cáo user, chờ approval để fix
 
 ## Last Updated
-2026-04-01 — fix-meta-desc.js built, Semantic SEO principles added to wp-technical-seo SKILL.md
+2026-04-02 — Thêm Script Version Log vào hot.md để Khoa không tự phán đoán script cũ/mới
