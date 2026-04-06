@@ -23,11 +23,15 @@
 
 ## SEO Rules
 - Focus keywords: mix Vietnamese + English (e.g., "biến tần B&R ACOPOS")
-- Meta titles: ≤60 characters, include primary keyword + "Agow Automation"
-- Meta descriptions: ≤160 characters, include call to action
+- Meta titles: **50–60 characters** (không phải 60), include primary keyword + "Agow Automation" — learned 2026-04-01
+- Meta descriptions: **140–155 characters optimal** (Google: ~155 desktop, ~120 mobile; >160 bị cắt) — NOT "≤160"
+- Short description (WooCommerce): 200–300 chars — tăng mật độ LSI keyword on-page (khác meta desc)
 - One H1 per page, must contain primary keyword
 - Internal linking: every product page links to its category and 2-3 related products
-- Image alt text: descriptive, include product name, no duplicate alt per page
+- Image alt text: descriptive, include product name, no duplicate alt per page (cross-site duplicates are OK)
+- **Title format B&R products**: `[Mã SP] [Loại thiết bị] [Spec kỹ thuật] [Dòng SP] B&R` — mã SP đứng đầu vì kỹ sư B2B search theo part number
+- **Citation preservation**: Giữ `(data sheet, trang X)` và `(manual, trang X)` trong long description — E-E-A-T signal cho B2B
+- **No generic CTA in meta**: Không append "Liên hệ Agow để báo giá" vào meta description hàng loạt — boilerplate signal
 
 ## Approval Requirements
 - New pages/posts: DRAFT only, admin approves before publish
@@ -35,6 +39,17 @@
 - Bulk operations (>10 pages): admin approval required
 - Content deletion: admin approval required
 - All other SEO fixes: auto-execute with notification
+
+## Khoa SEO — Operational Context (for Tong routing)
+> Tong cần biết điều này khi nhận request liên quan SEO.
+
+- **Khoa chỉ tạo DRAFT** — không bao giờ publish trực tiếp. Mọi request "đăng bài" cần Tong hỏi admin
+- **Tier 1 (auto)**: đọc data, audit, phân tích, tạo draft, viết report, fix meta/alt Tier 2
+- **Tier 2 (do + notify)**: fix meta title/desc, fix alt text, optimize image — làm trước, báo sau, undo trong 24h
+- **Tier 3 (cần approval)**: sửa robots.txt, publish post, xóa content, cài plugin, sửa .htaccess
+- **Scripts**: Tất cả qua `node khoa.js [command]` trong container `agow-openclaw`
+- **Verify sau fix**: Luôn purge LiteSpeed cache + check lại trước khi báo cáo xong
+- **Data freshness**: Không dùng crawl data > 24h để apply fix — re-crawl trước
 
 ## API Rate Limits
 - WordPress REST API: max 30 writes/hour

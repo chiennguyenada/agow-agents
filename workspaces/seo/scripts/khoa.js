@@ -6,23 +6,29 @@
  *   node khoa.js <command> [options]
  *
  * Commands:
+ *   check-meta                  Tìm NO_META_DESC/THIN_META_DESC + đề xuất semantic (dry-run)
+ *   fix-meta                    Ghi meta description. --apply, --id=N, --type=post|page|product
+ *   check-short-desc            Tìm short_description có noise / quá ngắn (dry-run)
+ *   fix-short-desc              Xoá noise + rebuild short_desc ngắn. --apply, --id=N
+ *   check-hotline               Tìm nội dung chứa hotline cũ (dry-run)
+ *   fix-hotline                 Thay hotline cũ → mới. --apply, --id=N, --type=product|page|post|category
+ *   check-long-desc             Tìm long_description có noise (manual refs, metadata block) (dry-run)
+ *   fix-long-desc               Xoá noise khỏi long_desc (giữ nguyên HTML). --apply, --id=N
  *   check-title                 Tìm title bị LONG/SHORT (dry-run, không sửa)
- *   fix-title                   Sửa LONG_TITLE tự động. Thêm --apply để ghi thật, --id=N để fix 1 item
+ *   fix-title                   Sửa LONG_TITLE tự động. --apply, --id=N
  *   missing-alt                 Tìm ảnh chưa có alt text (dry-run, không sửa)
- *   fix-missing-alt             Sửa alt text bị thiếu. Thêm --apply để ghi thật, --id=N để fix 1 item
+ *   fix-missing-alt             Sửa alt text bị thiếu. --apply, --id=N
  *   check-duplicate-alt         Tìm duplicate alt text trên cùng 1 trang (dry-run, không sửa)
- *   fix-duplicate-alt           Sửa duplicate alt text. Thêm --apply để ghi thật, --id=N để fix 1 item
+ *   fix-duplicate-alt           Sửa duplicate alt text. --apply, --id=N
  *   verify                      Xác nhận tất cả alt text đã được áp dụng đúng
  *   purge-cache                 Purge LiteSpeed Cache sau khi fix xong
  *   help                        Liệt kê tất cả commands
  *
- * Ví dụ workflow:
- *   node khoa.js check-title               # 1. Kiểm tra title issues
- *   node khoa.js fix-title --apply         # 2. Sửa LONG_TITLE
- *   node khoa.js missing-alt               # 3. Kiểm tra alt text
- *   node khoa.js fix-missing-alt --apply   # 4. Sửa alt text
- *   node khoa.js verify                    # 5. Xác nhận
- *   node khoa.js purge-cache               # 6. Purge cache
+ * Workflow chuẩn (mỗi đợt fix):
+ *   1. check-short-desc → fix-short-desc --apply   (strip noise short_desc)
+ *   2. check-long-desc  → fix-long-desc --apply    (strip noise long_desc)
+ *   3. check-meta       → fix-meta --apply         (fill/extend meta desc, dùng short+long đã clean)
+ *   4. purge-cache                                 (luôn purge sau fix)
  */
 
 const { spawnSync } = require('child_process');
@@ -33,6 +39,11 @@ const command = process.argv[2];
 const extraArgs = process.argv.slice(3); // pass-through: --apply, --dry-run, --id=N, etc.
 
 const COMMANDS = {
+  'export-dry-run': {
+    script: 'export-dry-run.js',
+    desc: 'Export kết quả dry-run ra CSV. --short/--long/--id=N',
+    defaultArgs: [],
+  },
   'check-meta': {
     script: 'fix-meta-desc.js',
     desc: 'Tìm NO_META_DESC/THIN_META_DESC + đề xuất semantic desc (dry-run)',
@@ -42,6 +53,46 @@ const COMMANDS = {
     script: 'fix-meta-desc.js',
     desc: 'Ghi meta description. Thêm --apply để ghi thật, --id=N, --type=post|page|product',
     defaultArgs: [],
+  },
+  'check-short-desc': {
+    script: 'fix-short-desc.js',
+    desc: 'Tìm short_description có noise/quá ngắn (dry-run)',
+    defaultArgs: [],
+  },
+  'fix-short-desc': {
+    script: 'fix-short-desc.js',
+    desc: 'Strip noise + rebuild short_desc ngắn. Thêm --apply để ghi thật, --id=N',
+    defaultArgs: [],
+  },
+  'check-hotline': {
+    script: 'fix-hotline.js',
+    desc: 'Tìm description chứa hotline cũ (dry-run). --type=product|page|post|category, --id=N',
+    defaultArgs: [],
+  },
+  'fix-hotline': {
+    script: 'fix-hotline.js',
+    desc: 'Thay hotline cũ → mới. --apply để ghi, --id=N, --type=..., --old="..." --new="..."',
+    defaultArgs: [],
+  },
+  'check-long-desc': {
+    script: 'fix-long-desc.js',
+    desc: 'Tìm long_description có noise (manual refs, metadata block) (dry-run)',
+    defaultArgs: [],
+  },
+  'fix-long-desc': {
+    script: 'fix-long-desc.js',
+    desc: 'Strip noise khỏi long_desc (giữ HTML). Thêm --apply để ghi thật, --id=N',
+    defaultArgs: [],
+  },
+  'rewrite-product': {
+    script: 'ai-rewrite-product.js',
+    desc: 'AI viết lại title + short_desc cho products 2025. --id=N test 1, --limit=N test N, --resume tiếp tục',
+    defaultArgs: [],
+  },
+  'apply-rewrite-product': {
+    script: 'ai-rewrite-product.js',
+    desc: 'Push cached AI results → WooCommerce. --id=N apply 1 SP, mặc định apply tất cả',
+    defaultArgs: ['--apply'],
   },
   'check-title': {
     script: 'fix-title.js',
@@ -90,15 +141,26 @@ if (!command || command === 'help') {
   Object.entries(COMMANDS).forEach(([cmd, info]) => {
     console.log(`  node khoa.js ${cmd.padEnd(25)} ${info.desc}`);
   });
-  console.log('\nWorkflow mẫu:');
-  console.log('  node khoa.js check-meta            # 1. Kiểm tra meta description');
-  console.log('  node khoa.js fix-meta --apply       # 2. Ghi meta desc');
-  console.log('  node khoa.js check-title            # 3. Kiểm tra title');
-  console.log('  node khoa.js fix-title --apply      # 4. Sửa LONG_TITLE');
-  console.log('  node khoa.js missing-alt            # 5. Kiểm tra alt text');
-  console.log('  node khoa.js fix-missing-alt --apply # 6. Sửa alt text');
-  console.log('  node khoa.js verify                  # 7. Xác nhận');
-  console.log('  node khoa.js purge-cache             # 8. Purge cache');
+  console.log('\nWorkflow chuẩn:');
+  console.log('  node khoa.js check-hotline              # 1b. Kiểm tra hotline cũ trong description');
+  console.log('  node khoa.js fix-hotline --apply        # 1c. Thay hotline cũ → mới');
+  console.log('  node khoa.js check-short-desc           # 1. Kiểm tra short_desc noise');
+  console.log('  node khoa.js fix-short-desc --apply     # 2. Strip noise short_desc');
+  console.log('  node khoa.js check-long-desc            # 3. Kiểm tra long_desc noise');
+  console.log('  node khoa.js fix-long-desc --apply      # 4. Strip noise long_desc');
+  console.log('  node khoa.js check-meta                 # 5. Kiểm tra meta desc');
+  console.log('  node khoa.js fix-meta --apply           # 6. Ghi meta desc');
+  console.log('  node khoa.js rewrite-product --id=5382      # 7a. Test AI rewrite 1 SP trước');
+  console.log('  node khoa.js rewrite-product --limit=5      # 7b. Test AI rewrite 5 SP');
+  console.log('  node khoa.js rewrite-product --resume       # 7c. AI rewrite tất cả (incremental)');
+  console.log('  node khoa.js apply-rewrite-product --id=N  # 8a. Apply 1 SP sau khi review CSV');
+  console.log('  node khoa.js apply-rewrite-product         # 8b. Apply tất cả sau khi review');
+  console.log('  node khoa.js check-title                # 9. Kiểm tra title');
+  console.log('  node khoa.js fix-title --apply          # 10. Sửa LONG_TITLE');
+  console.log('  node khoa.js missing-alt                # 11. Kiểm tra alt text');
+  console.log('  node khoa.js fix-missing-alt --apply    # 12. Sửa alt text');
+  console.log('  node khoa.js verify                     # 13. Xác nhận alt');
+  console.log('  node khoa.js purge-cache                # 14. Purge cache (sau mọi fix)');
   process.exit(0);
 }
 

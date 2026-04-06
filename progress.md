@@ -127,7 +127,68 @@
 - [x] **Verify** — `check-title` re-run: LONG_TITLE = 0 ✅, SHORT_TITLE = 9 (WC system pages, intentionally skipped) — 2026-04-01
 - [ ] Re-audit để xác nhận score cải thiện
 
-### Script Refactor: Portable wp-client.js — 2026-04-01
+### AI Rewrite Products 2025 — COMPLETED 2026-04-04
+- [x] Tạo `ai-rewrite-product.js` v2 — AI viết lại title + short_desc + meta_desc — 2026-04-03
+- [x] Fix parse failure (slice(3)→slice(2), maxTokens 450→900, bỏ instruction đếm ký tự) — 2026-04-03
+- [x] Thêm META_DESC (140-155c) làm field thứ 3 — 2026-04-03
+- [x] Filter: năm 2025 có title cũ "Hãng B&R" HOẶC short_desc có noise — 2026-04-03
+- [x] **Run full batch**: 422 SP xử lý xong (190 batch 1 + 232 batch 2) — 2026-04-03/04
+- [x] **Apply toàn bộ**: 422/422 ✅ lên WooCommerce, 0 lỗi — 2026-04-04
+- [x] **Purge cache** LiteSpeed — 2026-04-04
+- [x] Update hot.md + progress.md + changelog.md — 2026-04-04
+- **Windows note**: `MSYS_NO_PATHCONV=1` + `//home/...` bắt buộc cho docker exec trên Git Bash
+
+### AI Rewrite WooCommerce Categories — COMPLETED 2026-04-05
+- [x] Tạo `ai-rewrite-category.js` — generate + apply category description, RankMath SEO title/meta — 2026-04-05
+- [x] Build pipeline: dry-run → cache → review → apply (same pattern as ai-rewrite-product.js) — 2026-04-05
+- [x] WC Categories API: dùng `wp/v2/product_cat` (REST) + `rank_math_title`/`rank_math_description` — 2026-04-05
+- [x] Phân nhóm: A (thiếu desc <100w, 17 DM), B (có desc, cần nâng cấp, 14 DM), tổng 31 DM — 2026-04-05
+- [x] Fix parser 3 lần (AI dùng `**LABEL:**`, code fence, `**\n` trước fence) — 2026-04-05
+- [x] Tạo `fix-category-cache.js` — auto-fix h1→p, **bold**→strong, hãng b&r→B&R, trim meta — 2026-04-05
+- [x] Tạo `finalize-cache.js` — manual title trim + meta trim — 2026-04-05
+- [x] Tạo `reparse-cache.js` — re-parse rawResponse với parser mới (0 AI calls) — 2026-04-05
+- [x] **Apply toàn bộ**: 31/31 ✅ lên WooCommerce, 0 lỗi — 2026-04-05
+- [x] **Purge cache** LiteSpeed — 2026-04-05
+- **Quality**: 31/31 Clean (T:35-61c, M:120-162c, D:347-614w, H2/UL/Agow/B&R đủ)
+
+### Schema Markup — COMPLETED 2026-04-02
+- [x] **Audit schema hiện tại**: trang chủ, product page, category page — 2026-04-02
+- [x] **Phát hiện**: `@type:Electrician` sai — RankMath setting bị lỗi — 2026-04-02
+- [x] **Phát hiện**: Product schema hoàn toàn không có trên 590 WC products — 2026-04-02
+- [x] Tạo `workspaces/seo/snippets/fix-organization-type.php` — xóa Electrician, thêm PostalAddress + sameAs — 2026-04-02
+- [x] Tạo `workspaces/seo/snippets/product-schema.php` — Product JSON-LD: name/sku/mpn/brand/offers/image/category — 2026-04-02
+- [x] Add 2 snippets vào WPCode (PHP Snippet, Run Everywhere, Active) — 2026-04-02
+- [x] Purge WP Rocket cache (không phải LiteSpeed — phát hiện WP Rocket là caching layer chính) — 2026-04-02
+- [x] **Verify**: Electrician gone ✅ | Product schema đầy đủ ✅ trên tất cả product pages — 2026-04-02
+- **Note**: WP Rocket (không phải LiteSpeed) là cache chính — phải purge qua WP Admin, không có REST API
+
+### SKU/MPN Fix — COMPLETED 2026-04-02
+- [x] **Audit**: 590 products → 218/590 (37%) thiếu SKU — 2026-04-02
+- [x] **Extract**: 218/218 SKU extract được từ product name bằng B&R part number regex — 0 cần manual — 2026-04-02
+- [x] **Apply**: 215/218 ✅ SKU+MPN applied qua WC REST API — 2026-04-02
+- [x] **3 lỗi**: duplicate SKU conflict → phát hiện 3 cặp duplicate products (OLD 2021 / NEW 2025) — 2026-04-02
+- [x] **Compare**: NEW (2025) tốt hơn OLD (2021) trên mọi tiêu chí (long desc +60%, permalink tốt hơn) — 2026-04-02
+- [x] **Cleanup**: Set 3 OLD products (IDs 3201, 3184, 3223) về draft — 2026-04-02
+- [x] **Final coverage**: 587/590 SKU (99%) ✅ | 3 còn lại là bản 2021 đã draft — 2026-04-02
+- **Schema result**: Product schema giờ có sku + mpn đầy đủ trên 99% sản phẩm
+
+### APC2100/2200/3100 Short Desc + Meta Rewrite — COMPLETED 2026-04-06
+- [x] **Audit**: 14 SP APC — short_desc boilerplate (4 dòng noise + spec không phân biệt variant) — 2026-04-06
+- [x] **Audit**: 10/14 meta có CTA "Tư vấn miễn phí!" / "Liên hệ ngay!" — 2026-04-06
+- [x] **Audit**: ID 3754 (BY44) dùng sai mã BY01 trong short_desc — 2026-04-06
+- [x] Tạo `rewrite-apc.js` — dry-run + apply pipeline cho 14 SP cụ thể — 2026-04-06
+- [x] **AI generate**: 14/14 short_desc mới (200–300c, spec phân biệt variant: CPU/RAM/storage/slot) — 2026-04-06
+- [x] **AI generate**: 14/14 meta_desc mới (140–160c, không CTA, kết thúc "| B&R") — 2026-04-06
+- [x] **Apply**: 14/14 ✅ lên WooCommerce + RankMath meta — 2026-04-06
+- [x] **Title fix**: ID 3769 `rank_math_title` đã update (5APC3100.KBU3-000 Máy Tính Công Nghiệp Core i7 B&R) — 2026-04-06
+- [x] **Purge cache** + verify 3/3 spot-check PASS — 2026-04-06
+- **Quality**: 14/14 short(200-300c) ✅ | 14/14 meta(140-160c) ✅ | 0 CTA ✅ | 0 noise ✅
+
+
+- [ ] **Audit**: 133 SP năm 2021 — title 5 ngắn, short_desc 9 noise, meta_desc OK — 2026-04-04
+- [ ] Fix 5 title ngắn (<40c): IDs 3359, 2884, 3321, 3318, 3315
+- [ ] Fix 9 short_desc noise: IDs 3203, 3152, 3155, 3142, 2918, 2884, 2881, 2878, 2655
+- [ ] Xem xét AI rewrite toàn bộ 133 SP 2021 (viết tay, chất lượng thấp hơn 2025)
 - [x] Create `workspaces/seo/scripts/wp-client.js` — shared HTTP client, 100% env-based config — 2026-04-01
 - [x] Refactor `fix-missing-alt.js` — dùng wp-client, BRAND_NAME auto-detect từ domain — 2026-04-01
 - [x] Rewrite `verify-alt-fix.js` — scan toàn bộ site (không hardcode IDs), detect MISSING + DUPLICATE — 2026-04-01
@@ -310,21 +371,18 @@ _Tasks to be defined when user provides business requirements_
 | 1f    | 4           | 1    | 2        | 0       | 1       |
 | **Total** | **107** | **84** | **22** | **0** | **2** |
 
-> **2026-04-01 UPDATE (final)**: LONG_TITLE **fully resolved** — 0 items remaining.
-> Scripts: 7 files (wp-client, fix-title, fix-missing-alt, fix-duplicate-alt, verify-alt-fix, purge-cache, khoa)
+> **2026-04-02 UPDATE**: Content pipeline scripts hoàn chỉnh — 9 files, 14 commands.
+> Scripts mới: `fix-short-desc.js` (590 products, 577 CLEAN_ONLY + 13 THIN/SHORT), `fix-long-desc.js` (579/590 có noise).
+> `fix-meta-desc.js` upgrade v3: long_desc fallback, decimal-safe sentence splitter, trim-check.
 >
 > **SEO Fixes Done:**
 > - MISSING_ALT: 126/126 PASS ✅
 > - DUPLICATE_ALT: 3 trang đã fix ✅
-> - LONG_TITLE: 8/8 fixed (AI-written titles) ✅
-> - SHORT_TITLE: 9 system pages intentionally skipped (không ảnh hưởng SEO)
+> - LONG_TITLE: 8/8 fixed ✅
+> - Meta desc posts: 0 issues ✅
 >
-> **Next:**
-> 1. Re-audit để verify score cải thiện sau 2 đợt fix
-> 2. SHORT_TITLE MODULE (3IF786.9, 3IF787.9) đã fix — confirm bằng check-title
-> 3. GSC API registration (Phase 1f) — xem keywords cải thiện sau fix
->
-> **Manual blockers:**
-> 1. WordPress Application Password — đã có ✅
-> 2. WooCommerce Consumer Key/Secret — đã có ✅
-> 3. GSC API registration — Phase 1f (pending)
+> **Pending (cần approval):**
+> 1. `fix-short-desc --apply` — 590 products (577 clean noise + 13 thin/short)
+> 2. `fix-long-desc --apply` — 579 products (manual refs + metadata block)
+> 3. `fix-meta --apply` — pages 9 items trước → products 391 items sau
+> 4. GSC API (Phase 1f)

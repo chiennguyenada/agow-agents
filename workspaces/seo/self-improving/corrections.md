@@ -2,7 +2,23 @@
 <!-- Admin feedback → agent learns to avoid repeating mistakes -->
 <!-- Format: date, task, mistake, correction, reason -->
 
-## 2026-03-31 — Duplicate Alt Fix: 2 Edge Cases
+## 2026-04-02 — Cache Layer Nhầm: WP Rocket Không Phải LiteSpeed
+
+- **Task**: Verify schema snippet sau khi add vào WPCode
+- **Lỗi**: Sau khi bảo user purge cache, fetch lại vẫn thấy `<!-- cached@ -->` comment → tưởng LiteSpeed chưa purge. Thực ra `purge-cache.js` dùng LiteSpeed API endpoint, nhưng site đang dùng **WP Rocket** (không phải LiteSpeed)
+- **Phát hiện**: HTML comment cuối trang là `<!-- This website is like a Rocket... WP Rocket -->` — đây là WP Rocket, không phải LiteSpeed
+- **Đúng**: WP Rocket cache phải purge qua WP Admin → admin bar → "Clear Cache" hoặc WP Rocket dashboard. Không có REST API endpoint.
+- **Nguyên tắc từ đây**: Luôn check cache layer thực tế bằng cách đọc HTML comment cuối trang trước khi assume LiteSpeed hay WP Rocket
+
+## 2026-04-02 — SKU Conflict 400: Luôn Check Duplicate Product Trước
+
+- **Task**: Apply SKU cho 218 sản phẩm thiếu SKU
+- **Lỗi**: 3 sản phẩm bị 400 `product_invalid_sku` — tưởng SKU format sai. Thực ra SKU đó đã được dùng bởi product khác
+- **Root cause**: 3 cặp duplicate products (OLD 2021 + NEW 2025) cùng tên → NEW đã có SKU, OLD không có → khi set OLD = same SKU → WC reject duplicate
+- **Đúng**: Khi gặp 400 `product_invalid_sku`, search SKU đó qua `/wc/v3/products?sku={sku}` → tìm conflict → compare 2 products → set bản cũ hơn về draft
+- **Nguyên tắc**: Trước khi bulk apply SKU, query `/wc/v3/products?sku={sku}` để verify unique. Nếu conflict → investigate, không retry blindly.
+
+
 
 ### Edge Case 1: WC Product có 2 ảnh cùng media ID
 - **Tình huống**: Product 3789 (X20CP3583) — image `3790` là gallery image, image `3790` cũng là featured image → cùng media ID
@@ -22,7 +38,19 @@
 - **Đúng**: Chạy `node khoa.js check-duplicate-alt` → scan per-page → tìm đúng 3 trang có lỗi
 - **Nguyên tắc**: Duplicate alt text chỉ là lỗi khi cùng alt text xuất hiện ≥2 lần TRÊN CÙNG 1 TRANG
 
-## 2026-04-01 — fix-meta-desc.js: Script Logic Sai (Không Chỉ SKILL.md)
+## 2026-04-02 — Citation (data sheet/manual, trang X) Không Phải Noise
+
+- **Task**: Upgrade fix-long-desc.js và ai-rewrite-desc.js
+- **Lỗi thiết kế ban đầu**: `cleanNoise()` và `cleanLongDescHtml()` xóa `(data sheet, trang X)` và `(manual, trang X)` khỏi long description — xem đây là "tạp nhiễu"
+- **Phát hiện qua phân tích**: 367/590 sản phẩm (62%) có citation dạng này. Đây là E-E-A-T signal:
+  - Chứng minh nội dung lấy từ tài liệu kỹ thuật chính hãng B&R (không phải AI hallucination)
+  - Kỹ sư B2B đọc specs → thấy citation → tăng trust → dwell time tăng → ranking tốt hơn
+  - Google phân biệt được technical reference content với generic AI content
+- **Noise thật sự** (nên xóa): phone số (028 6670 9931), email, metadata block (Mã SP/Thương hiệu/Xuất xứ), CTA boilerplate
+- **Đã sửa**: fix-long-desc.js v2 + ai-rewrite-desc.js v2 — GIỮ citation, chỉ XÓA noise thật
+- **Nguyên tắc**: Với B2B kỹ thuật, citation = tín chỉ chuyên môn. Khác hoàn toàn B2C.
+
+
 
 - **Lỗi**: Sửa SKILL.md và hot.md không đủ — script `fix-meta-desc.js` vẫn hardcode CTA vì rule chỉ có trong knowledge files, không ảnh hưởng code đang chạy
 - **Root cause 1 (CTA)**: `generateProductDesc()` dòng 110-118 hardcode `const cta = 'Liên hệ...'` → append vào mọi product

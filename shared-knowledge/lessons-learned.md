@@ -59,4 +59,74 @@
 
 ## Operational Lessons
 
-_New lessons will be appended here by the agents during operation._
+### LESSON-007: WordPress Strips HTML Tags in Taxonomy Descriptions
+- **Date**: 2026-04-05
+- **Agent**: Khoa (SEO)
+- **Category**: WordPress API
+- **Issue**: `<h2>`, `<ul>`, `<li>`, `<p>` tags stripped when saving WooCommerce category description via REST API. Only `<strong>`, `<em>`, `<a>` survive.
+- **Root Cause**: WordPress applies `wp_filter_kses` filter via `pre_term_description` hook, which only allows basic inline tags in taxonomy term descriptions.
+- **Solution**: Add PHP snippet via WPCode (active on agowautomation.com):
+  ```php
+  remove_filter( 'pre_term_description', 'wp_filter_kses' );
+  add_filter( 'pre_term_description', 'wp_kses_post' );
+  remove_filter( 'term_description', 'wp_kses_data' );
+  ```
+- **Prevention**: Before any taxonomy description write operation, verify snippet is active. Test by saving `<h2>test</h2>` and reading back — if `<h2>` survives, snippet is active. **Re-apply all descriptions after activating snippet** (data already in DB was stripped).
+- **Applies to**: All taxonomy types — product_cat, category, tag, custom taxonomies
+
+### LESSON-008: Windows Git Bash + Docker Exec Path Mangling
+- **Date**: 2026-04-02
+- **Agent**: Khoa (SEO)
+- **Category**: Infrastructure / DevOps
+- **Issue**: `docker exec agow-openclaw node /home/node/...` fails on Windows Git Bash — path gets mangled to `C:/Program Files/Git/home/node/...`
+- **Root Cause**: Git Bash auto-converts Unix paths starting with `/` to Windows paths
+- **Solution**: Always use `MSYS_NO_PATHCONV=1` prefix AND double-slash `//home/...`:
+  ```bash
+  MSYS_NO_PATHCONV=1 docker exec agow-openclaw node //home/node/.openclaw/workspaces/seo/scripts/khoa.js help
+  ```
+- **Prevention**: Any script or instruction involving `docker exec` + Unix path on Windows must include both `MSYS_NO_PATHCONV=1` and `//` prefix.
+
+### LESSON-009: AI Response Parsing — Defensive Approach Required
+- **Date**: 2026-04-05
+- **Agent**: Khoa (SEO)
+- **Category**: AI Integration
+- **Issue**: AI (Claude) output format is inconsistent even with strict prompting. Same prompt may return `**LABEL:**`, `## LABEL:`, ` ```LABEL``` `, or plain `LABEL:` across different calls.
+- **Root Cause**: LLM non-determinism — formatting instructions are suggestions, not guarantees.
+- **Solution**: Use position-based parsing (find label positions via regex, extract blocks between labels) instead of line-by-line parsing. Add `meaningful()` filter to skip lines containing only `**`, ` ``` `, `---`:
+  ```js
+  const meaningful = l => l.replace(/^[`*\-\s]+|[`*\-\s]+$/g,'').length > 5 && /[a-zA-ZÀ-ỹ0-9]/.test(l);
+  ```
+- **Prevention**: Always save raw AI response (`rawResponse`) in cache alongside parsed result — enables free reparse when parser is improved, no extra API cost.
+- **Key edge cases**: `**\n` before code fence (strip `^\s*\*{1,2}\s*\n` before fence strip); `**` as standalone line before content (filter with `meaningful()`).
+
+### LESSON-010: B2B SEO — Citation References Are E-E-A-T Signals
+- **Date**: 2026-04-02
+- **Agent**: Khoa (SEO)
+- **Category**: SEO Content Strategy
+- **Issue**: Auto-fix scripts incorrectly removed `(data sheet, trang X)` and `(manual, trang X)` from product descriptions, treating them as noise.
+- **Root Cause**: Pattern matching too aggressive — noise cleanup script didn't distinguish between actual noise (phone numbers, email, metadata block) and technical citations.
+- **Finding**: 367/590 products (62%) have these citation patterns. For B2B industrial buyers, citations prove content is sourced from official B&R documentation — increases trust and dwell time.
+- **Solution**: Only remove true noise: phone (028...), email addresses, metadata blocks (Mã SP / Thương hiệu / Xuất xứ), generic CTA boilerplate. KEEP all citation patterns.
+- **Prevention**: For B2B technical content, citation = credibility signal. Different from B2C where citations may look academic/off-putting.
+
+### LESSON-011: Meta Description — Extend, Never Replace When Partially Good
+- **Date**: 2026-04-02
+- **Agent**: Khoa (SEO)
+- **Category**: SEO Content Strategy
+- **Issue**: Fix script for THIN_META_DESC (102–119 chars) replaced existing content with shorter AI-generated text — making things worse.
+- **Root Cause**: Script called `generateProductDesc()` (build from scratch) instead of `extendProductDesc()` (extend existing). Result: original 138-char desc → new 90-char desc.
+- **Solution**:
+  - `NO_META_DESC` → build from scratch
+  - `THIN_META_DESC` → extend existing with specific technical specs (resolution, protocol, channels, application)
+  - Safety check: `if (newDesc.length < currentDesc.length) → keep original, flag needsManual`
+- **Rule**: Optimal meta desc = 140–155 chars. Never append generic CTA ("Liên hệ Agow...") to 78+ pages — boilerplate signal kills uniqueness. Use remaining chars for product-specific technical info instead.
+
+### LESSON-012: WooCommerce Category URL Structure
+- **Date**: 2026-04-05
+- **Agent**: Khoa (SEO)
+- **Category**: WordPress / WooCommerce
+- **Finding**: WooCommerce product categories are accessible via two REST API endpoints:
+  - `GET /wp-json/wp/v2/product_cat/{id}` — WordPress REST API (for description + RankMath meta)
+  - `GET /wp-json/wc/v3/products/categories/{id}` — WooCommerce REST API (for product count, image, display settings)
+- **For SEO updates**: Use `/wp/v2/product_cat` (WP REST API + Basic Auth). Supports `meta` field for RankMath.
+- **URL pattern**: `https://agowautomation.com/{slug}` — categories use direct slug, NOT `/danh-muc-san-pham/` prefix (WooCommerce default).

@@ -9,19 +9,20 @@
  *   node fix-meta-desc.js --id=123     # chỉ xử lý 1 item
  *   node fix-meta-desc.js --type=post  # chỉ xử lý posts (post|page|product)
  *
- * Semantic SEO meta description formula (2026-04-01):
+ * Semantic SEO meta description formula (2026-04-02 — chuẩn cập nhật):
  *   THIN_META_DESC → EXTEND bản gốc (thêm spec kỹ thuật còn thiếu, KHÔNG replace)
  *   NO_META_DESC   → BUILD từ short_description (2 câu đầu chứa spec kỹ thuật)
  *   KHÔNG append CTA chung ("Liên hệ Agow...") cho products — boilerplate signal
  *   CTA chỉ dùng cho page/service descriptions (intent phù hợp)
  *   Target: 140–155 chars. Safety: không bao giờ đề xuất ngắn hơn bản gốc.
  *
- * Target length: 140–155 chars (Google hiển thị ~155 desktop, ~120 mobile)
- * THIN_META_DESC: < 140 chars
- * LONG_META_DESC: > 160 chars (bị cắt giữa chừng)
+ * Chuẩn SEO semantic (confirmed):
+ *   Meta Description: 140–155 chars (Google hiển thị ~155 desktop, ~120 mobile)
+ *   THIN_META_DESC: < 140 chars
+ *   LONG_META_DESC: > 155 chars (bị cắt)
  * Optional env: WC_CONSUMER_KEY, WC_CONSUMER_SECRET
- *               META_DESC_MIN (default: 120)
- *               META_DESC_MAX (default: 160)
+ *               META_DESC_MIN (default: 140)
+ *               META_DESC_MAX (default: 155)
  *               SITE_BRAND    (default: "Agow Automation")
  */
 
@@ -36,7 +37,7 @@ const ONLY_ID  = (() => { const m = process.argv.join(' ').match(/--id=(\d+)/); 
 const ONLY_TYPE = (() => { const m = process.argv.join(' ').match(/--type=(\w+)/); return m ? m[1] : null; })();
 
 const DESC_MIN    = parseInt(process.env.META_DESC_MIN || '140');
-const DESC_MAX    = parseInt(process.env.META_DESC_MAX || '160');
+const DESC_MAX    = parseInt(process.env.META_DESC_MAX || '155');  // chuẩn: 140–155c
 const SITE_BRAND  = process.env.SITE_BRAND || 'Agow Automation';
 const BACKUP_DIR  = path.join(__dirname, '..', 'backups');
 
@@ -81,19 +82,44 @@ function checkDesc(desc) {
 //   4. Dùng ~40 chars còn lại để thêm SPEC kỹ thuật unique cho từng sản phẩm
 //   5. CTA chỉ dùng cho service/page, không dùng cho product detail
 
-// Lấy các câu từ short_description chưa có trong existing desc
-function extractNewSpecs(existingDesc, shortDesc) {
-  if (!shortDesc) return '';
+// Lấy các câu từ text chưa có trong existing desc, ưu tiên câu chứa keyword kỹ thuật
+// Sentence splitter: chỉ tách tại dấu chấm sau ký tự không phải số (tránh 0.1 bị tách)
+function splitSentencesSafe(text) {
+  // Tách tại ". " (dấu chấm + khoảng trắng) KHÔNG nằm giữa 2 chữ số (decimal)
+  return text.split(/(?<![0-9])\.\s+(?![0-9])/).map(s => s.trim()).filter(s => s.length > 15);
+}
+
+function extractSpecsFromText(existingDesc, sourceText) {
+  if (!sourceText) return '';
   const existing = existingDesc.toLowerCase();
-  const sentences = shortDesc.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 15);
-  // Tìm câu chứa thông tin chưa có trong existing desc
+  const sentences = splitSentencesSafe(sourceText);
   const newInfo = sentences.filter(s => {
-    // Lấy các từ quan trọng (số, đơn vị, model codes) trong câu này
     const keywords = s.match(/\b(\d+[\w\/]*|MHz|VDC|kHz|GB|MB|mm|kW|Nm|IP\d+|SIL\d|Cat\.\d|M\d+|RS\d+|USB|Ethernet|POWERLINK|PROFIBUS|Modbus|EtherNet\/IP|CANopen|X2X|SafeNODE|SafeLOGIC|PLCopen|I\/O|I\/Os)\b/gi) || [];
-    // Nếu câu có keyword kỹ thuật và keyword đó chưa có trong existing → đây là info mới
     return keywords.some(k => !existing.includes(k.toLowerCase()));
   });
-  return newInfo.slice(0, 2).join('. '); // tối đa 2 câu mới
+  return newInfo.slice(0, 2).join('. ');
+}
+
+// Strip manual refs và metadata noise khỏi long_description (plain text)
+function cleanLongDescText(rawHtml) {
+  if (!rawHtml) return '';
+  let t = stripHtml(rawHtml);
+  t = t.replace(/\(manual,\s*trang\s*[\d\-–]+\)/gi, '');
+  t = t.replace(/\(user\s*manual[^)]{0,40}\)/gi, '');
+  t = t.replace(/Mã\s+(số\s+)?sản\s+phẩm\s*:\s*[\w.\-]+\s*/gi, '');
+  t = t.replace(/Thương\s+hiệu\s*:\s*[^\n.]+[.\n]?\s*/gi, '');
+  t = t.replace(/Xuất\s+xứ\s*:\s*[^\n.]+[.\n]?\s*/gi, '');
+  return t.replace(/\s+/g, ' ').trim();
+}
+
+// extractNewSpecs: thử short_desc trước, fallback sang long_desc
+function extractNewSpecs(existingDesc, shortDesc, longDesc) {
+  // 1. Thử từ short_description (đã clean sau fix-short-desc)
+  const fromShort = extractSpecsFromText(existingDesc, stripHtml(shortDesc || ''));
+  if (fromShort) return fromShort;
+  // 2. Fallback: long_description (strip manual refs trước)
+  const cleanLong = cleanLongDescText(longDesc || '');
+  return extractSpecsFromText(existingDesc, cleanLong);
 }
 
 // Nhận dạng dòng sản phẩm B&R
@@ -112,33 +138,40 @@ function detectProductLine(name, cats) {
 }
 
 // THIN_META_DESC: mở rộng bản gốc bằng specs còn thiếu
+// Thứ tự fallback: short_desc → long_desc (clean)
 function extendProductDesc(currentDesc, product) {
-  const rawShort = stripHtml(product.short_description || '');
-  const newSpecs = extractNewSpecs(currentDesc, rawShort);
+  const rawShort = product.short_description || '';
+  const rawLong  = product.description || '';
+  const newSpecs = extractNewSpecs(currentDesc, rawShort, rawLong);
   if (!newSpecs) {
-    // Không tìm được spec mới → flag needsReview, trả về bản gốc để không làm xấu hơn
     return { desc: currentDesc, needsManual: true };
   }
-  // Ghép: bản gốc (không CTA) + spec mới
-  const base = currentDesc.replace(/\.\s*(Liên hệ|Xem thêm|Contact|Mua ngay)[^.]*\.\s*$/, '').trim();
+  const base = currentDesc
+    .replace(/\.\s*(Liên hệ|Xem thêm|Contact|Mua ngay)[^.]*\.\s*$/, '')
+    .replace(/\.\s*$/, '')   // bỏ trailing dấu chấm để tránh double period khi nối
+    .trim();
   let extended = base + '. ' + newSpecs;
   if (extended.length > DESC_MAX) extended = smartTrim(extended, DESC_MAX);
+  // Nếu sau trim kết quả không dài hơn bản gốc (smartTrim cắt về câu gốc) → needsManual
+  if (extended.length < currentDesc.length + 5) {
+    return { desc: currentDesc, needsManual: true };
+  }
   return { desc: extended, needsManual: false };
 }
 
-// NO_META_DESC: build từ đầu từ short_description
+// NO_META_DESC: build từ đầu từ short_description, fallback long_description
 function buildProductDesc(product) {
   const name    = stripHtml(product.name || '').trim();
   const cats    = (product.categories || []).map(c => c.name).filter(Boolean);
-  const rawShort = stripHtml(product.short_description || '');
   const line    = detectProductLine(name, cats);
 
-  // Ưu tiên: dùng câu đầu + câu thứ 2 của short_description (chứa spec kỹ thuật nhất)
-  const sentences = rawShort.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 15);
+  // Nguồn ưu tiên: short_description (đã clean sau fix-short-desc)
+  const rawShort  = stripHtml(product.short_description || '');
+  const sentences = splitSentencesSafe(rawShort);
 
   let desc = '';
+
   if (sentences.length >= 2) {
-    // Có đủ content → lấy 2 câu đầu chứa specs
     desc = sentences.slice(0, 2).join('. ');
     if (line && !desc.toUpperCase().includes(line.replace(' System','').replace(' Safety',''))) {
       desc += `. Thuộc dòng ${line} B&R`;
@@ -147,10 +180,22 @@ function buildProductDesc(product) {
     desc = sentences[0];
     if (line) desc += `. Thuộc dòng ${line} B&R Automation`;
   } else {
-    // Không có short_description → dùng name + category, flag review
-    const catStr = cats.filter(c => !/hãng b&r|b&r automation/i.test(c)).slice(0, 2).join(', ');
-    desc = `${name}${catStr ? ' – ' + catStr : ''}${line ? '. Dòng ' + line + ' B&R' : ''}`;
-    return { desc: smartTrim(desc, DESC_MAX), needsManual: true };
+    // Không có short_desc → fallback: dùng long_desc (đã clean)
+    const cleanLong = cleanLongDescText(product.description || '');
+    const longSentences = splitSentencesSafe(cleanLong);
+    if (longSentences.length >= 2) {
+      desc = longSentences.slice(0, 2).join('. ');
+      if (line && !desc.toUpperCase().includes(line.replace(' System','').replace(' Safety',''))) {
+        desc += `. Dòng ${line} B&R`;
+      }
+    } else if (longSentences.length === 1) {
+      desc = longSentences[0] + (line ? `. Dòng ${line} B&R` : '');
+    } else {
+      // Không có cả short + long → dùng name + category
+      const catStr = cats.filter(c => !/hãng b&r|b&r automation/i.test(c)).slice(0, 2).join(', ');
+      desc = `${name}${catStr ? ' – ' + catStr : ''}${line ? '. Dòng ' + line + ' B&R' : ''}`;
+      return { desc: smartTrim(desc, DESC_MAX), needsManual: true };
+    }
   }
 
   desc = smartTrim(desc, DESC_MAX);
@@ -320,7 +365,7 @@ async function main() {
     process.stderr.write('Fetching WC products...\n');
     const products = await fetchAll(
       '/wp-json/wc/v3/products',
-      'id,name,permalink,short_description,categories,meta_data',
+      'id,name,permalink,short_description,description,categories,meta_data',
       true
     );
     const filtered = ONLY_ID ? products.filter(p => p.id === ONLY_ID) : products;

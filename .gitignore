@@ -7,6 +7,9 @@ secrets/
 # Runtime data
 openclaw-home/
 backups/
+**/backups/
+**/cache/
+**/reports/
 *.db
 *.db-journal
 *.sqlite

@@ -74,8 +74,35 @@
 - **Dry-run mặc định**: scripts KHÔNG ghi gì nếu không có `--apply` — an toàn để test
 - **Verify sau fix**: luôn chạy `verify` sau khi fix để confirm thực sự đã thay đổi trên live site
 
-## Alt Text Strategy (learned 2026-03-31)
-- WooCommerce products: alt text lưu ở `images[].alt` trong WC API (không phải WP media)
-- Duplicate alt: dùng Set() per page để phát hiện — cùng alt trên 2+ ảnh trong 1 trang = lỗi
-- Sau fix alt → LUÔN purge LiteSpeed Cache (dùng `purge-cache` command)
-- agowautomation.com: alt text hiện tại 100% coverage — tập trung vào duplicate và quality
+## Schema & Structured Data (learned 2026-04-02)
+
+### Product Schema Workflow
+- **Trigger**: mọi WC product page tự động có Product schema qua WPCode snippet `product-schema.php`
+- **Fields bắt buộc**: `@type:Product`, `name`, `brand`, `offers` (availability InStock/OutOfStock), `image`
+- **Fields quan trọng**: `sku` (lowercase), `mpn` (UPPERCASE), `category`
+- **Brand auto-detect**: category slug `hang-bachmann` hoặc `plc-bachmann` → `Bachmann`; còn lại → `B&R Automation`
+- **Verify schema**: fetch product URL → count JSON-LD blocks (phải có 2: RankMath + snippet) → parse Product node
+
+### SKU Auto-Extract Pattern
+Khi gặp WC product thiếu SKU, extract từ product name theo B&R part number regex:
+```
+X20xxx, X67xxx, X90xxx — I/O modules
+3xx, 7xx (vd: 3PS465.9, 7AI261.7) — 2003/2005 system
+8Vxxx (vd: 8V1640.00-2) — ACOPOS servo drives
+5APCxxx, 5PCxxx — Automation PC / IPC
+5APxxx (vd: 5AP920.1906-01) — Automation Panel
+5LSxxx — Logic Scanner
+8BACxxx — ACOPOS Multi plug-in
+4IFxxx — communication modules
+MXxxx (vd: MX220) — Bachmann PLC
+PPxxx, APxxx — Power Panel / Automation Panel
+```
+- SKU = mã gốc lowercase (vd: `x20cp1483-1`)
+- MPN = mã gốc UPPERCASE (vd: `X20CP1483-1`)
+- Khi gặp 400 `product_invalid_sku` → query `/wc/v3/products?sku={sku}` → tìm conflict → compare cũ/mới → set bản cũ hơn về draft
+
+### Cache Layer Detection
+- Cuối HTML có `<!-- This website is like a Rocket... WP Rocket -->` → **WP Rocket** → purge qua WP Admin
+- Cuối HTML có `<!-- LiteSpeed Cache... -->` → **LiteSpeed** → purge qua `purge-cache.js` hoặc LiteSpeed plugin
+- Luôn check cache layer thực tế trước khi troubleshoot "sao snippet không chạy"
+

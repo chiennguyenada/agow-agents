@@ -6,7 +6,192 @@
 
 ---
 
-### 2026-04-01 — LONG_TITLE Fix Complete (8/8) — AI-Written Titles Applied
+### 2026-04-06 — Hotline Replace: 028 6670 9931 → 0934 795 982 (47 items)
+**Phase**: SEO Content
+**Files changed**:
+- `workspaces/seo/scripts/fix-hotline.js` — created — Config-driven scan+replace script: 4 content types (WC products, WP pages, WP posts, WC categories), dry-run + apply + --id/--type/--old/--new flags, flexible regex (match mọi format), backup trước write.
+- `workspaces/seo/skills/wp-hotline/SKILL.md` — created — Skill doc cho Khoa: khi nào dùng, workflow, advanced options.
+- `workspaces/seo/scripts/khoa.js` — modified — +2 commands: `check-hotline`, `fix-hotline` + workflow comment.
+- `progress.md` — modified — added hotline task section.
+
+**Why**: Hotline cũ "028 6670 9931" xuất hiện trong description của 47 item (41 products, 4 pages, 2 posts). Số mới là "0934 795 982". Thiết kế config-driven để tái dụng khi thông tin liên hệ thay đổi tiếp.
+
+**Tests**: Layer 1: syntax OK ✅ | Layer 2: dry-run 47 items detected ✅ | Layer 3: 46/46 applied ✅ (1 page detect+replace riêng) | Layer 4: re-scan products → 0 remaining ✅, verify page 1195 → clean ✅
+**Dependencies affected**: WC product pages (description), WP pages, WP posts — LiteSpeed Cache purged
+**Notes**: Script tái dụng: `node khoa.js fix-hotline --apply --old="số cũ" --new="số mới"`. Backup tại workspaces/seo/backups/hotline-backup-*.json.
+
+---
+
+### 2026-04-06 — APC2100/2200/3100 Short Desc + Meta Rewrite: 14/14 Applied
+**Phase**: SEO Content
+**Files changed**:
+- `workspaces/seo/scripts/rewrite-apc.js` — created — dry-run + apply pipeline cho 14 SP Automation PC. AI generate short_desc (3 câu spec phân biệt variant) + meta_desc (140–160c không CTA). Fix title ID 3769 qua RankMath meta.
+- `workspaces/seo/cache/apc-rewrite-cache.json` — created — cache 14 kết quả AI
+- `workspaces/seo/reports/apc-rewrite-20260406.csv` — created — export CSV để review
+- `progress.md` — modified — added APC rewrite section
+
+**Why**: 14 SP APC2100/2200/3100 có short_desc boilerplate — chỉ thay mã ở câu đầu, phần còn lại y hệt nhau giữa các variant, kèm 4 dòng noise bán hàng ("Chính hãng, bảo hành..."). Kỹ sư B2B không phân biệt được BY01 vs BY48 (single-core vs quad-core, 1GB vs 8GB). 10/14 meta có CTA "Tư vấn miễn phí!" — anti-pattern. ID 3754 còn sai mã (BY01 thay vì BY44).
+
+**Tests**: Layer 1: syntax OK ✅ | Layer 2: 14/14 short(200-300c) ✅ 14/14 meta(140-160c) ✅ | Layer 3: 14/14 applied ✅, 3/3 spot-check PASS ✅ | Layer 4: script mới — no regression
+**Dependencies affected**: 14 WC product pages, WP Rocket cache (purged)
+**Notes**: `rewrite-apc.js` có thể tái dụng cho các danh mục tương tự — chỉ thay `PRODUCT_GROUPS` và `CAT_DESCS`. WP Rocket cache purged qua purge-cache.js (LiteSpeed fallback).
+
+---
+
+### 2026-04-02 — Schema Markup + SKU/MPN Fix toàn bộ 590 sản phẩm
+**Phase**: SEO Technical
+**Files changed**:
+- `workspaces/seo/snippets/fix-organization-type.php` — created — PHP snippet (WPCode): xóa `Electrician` khỏi RankMath Organization schema, thêm PostalAddress + sameAs. Dùng 2 filter: `rank_math/schema/Organization` (preferred) + `rank_math/json_ld` (fallback)
+- `workspaces/seo/snippets/product-schema.php` — created — PHP snippet (WPCode): inject `Product` JSON-LD schema vào tất cả WC product pages qua `wp_footer` hook. Fields: name, url, image (+ gallery), sku, mpn, brand (B&R/Bachmann auto-detect), offers (InStock/OutOfStock), category
+- `shared-knowledge/lessons-learned.md` — modified — Added LESSON-007 đến LESSON-012
+- `shared-knowledge/company-rules.md` — modified — SEO Rules updated (meta desc 140-155c, title 50-60c, citation rule, no CTA rule); thêm "Khoa SEO — Operational Context" section cho Tong routing
+- `shared-knowledge/product-catalog.md` — modified — thêm B&R Title Templates, WC Category Map (31 danh mục)
+- `workspaces/seo/self-improving/hot.md` — modified — thêm Schema rules, SKU/MPN workflow, WP Rocket cache note
+- `workspaces/seo/self-improving/corrections.md` — modified — thêm correction về WP Rocket vs LiteSpeed, SKU extraction pattern
+- `workspaces/seo/self-improving/patterns.md` — modified — thêm Schema & Structured Data section, SKU Auto-Extract Pattern
+- `progress.md` — modified — added Schema + SKU/MPN sections
+
+**Why**:
+1. RankMath sai `@type: Electrician` → Google nhầm business type. Fix bằng WPCode PHP snippet filter RankMath schema.
+2. 590 WC products không có Product schema → mất rich results (price/availability) trên SERP.
+3. 218/590 (37%) sản phẩm thiếu SKU → Product schema không đầy đủ, Google không nhận diện được product entity.
+4. Fix SKU: extract từ product name bằng B&R part number regex (X20/X67/3xx/5xx/8V...) — 218/218 extract thành công.
+5. 3 sản phẩm duplicate (OLD 2021 / NEW 2025) → set OLD về draft để tránh duplicate content.
+
+**Root causes**:
+- `Electrician`: RankMath Knowledge Graph → Organization Type setting bị chọn sai → fix qua WPCode không cần vào admin RankMath
+- `No Product schema`: RankMath WC module không tự generate schema nếu không cấu hình đúng → inject qua PHP snippet
+- `Missing SKU`: Sản phẩm 2021 (viết tay) không điền SKU khi tạo → extract từ product name
+
+**Tests**: Layer 1: JSON-LD valid trên 4 test URLs ✅ | Layer 2: Electrician gone ✅, Product schema present ✅, sku+mpn in schema ✅ | Layer 3: 587/590 SKU (99%) verified via WC API | Layer 4: Homepage + category pages unaffected ✅
+**Dependencies affected**: Tất cả WC product pages (schema output), Organization schema (tất cả trang), WP Rocket cache behavior
+**Notes**:
+- WP Rocket là cache layer chính (không phải LiteSpeed như ghi trong hot.md cũ) — cần purge qua WP Admin (không có REST API)
+- 2 JSON-LD blocks trên product page là bình thường (1 RankMath + 1 snippet) — Google chấp nhận
+- 3 OLD duplicate products (3201, 3184, 3223) → draft; NEW (5259, 5253, 5286) → publish với SKU đầy đủ
+- Rich results sẽ xuất hiện trên Google sau 3-7 ngày crawl
+
+---
+
+### 2026-04-05 — AI Rewrite WooCommerce Categories: 31/31 Applied
+**Phase**: SEO Content Pipeline
+**Files changed**:
+- `workspaces/seo/scripts/ai-rewrite-category.js` — created → thêm `HTML_EXAMPLE` trong buildPrompt, fix parser 3 lần (LABEL_RE positions, `**\n` trước code fence, meaningful line filter), cải thiện `getBlock()` để strip `**\n` trước ``` 
+- `workspaces/seo/scripts/fix-category-cache.js` — created — auto-fix h1→p, **bold**→strong, hãng b&r→B&R, trim meta >155c, revalidate issues. REGEN_IDS=[] sau khi xong
+- `workspaces/seo/scripts/finalize-cache.js` — created — manual title fixes cho 14 DM dài >60c, meta trim, revalidate với Bachmann exception (không check B&R)
+- `workspaces/seo/scripts/reparse-cache.js` — created — re-parse tất cả rawResponse với parser mới, không gọi AI, cập nhật cache
+- `workspaces/seo/scripts/category-parser-standalone.js` — created (generated) — standalone parser module cho require()
+- `progress.md` — modified — added "AI Rewrite WooCommerce Categories — COMPLETED 2026-04-05" section
+- `changelog.md` — modified — this entry
+
+**Why**: 31 danh mục WooCommerce thiếu description, SEO title, meta description tối ưu. AI generate xong nhưng parser fail do AI không nhất quán format output (dùng `**LABEL:**`, code fence, `**\n` trước fence). Đã fix parser 3 lần và build toolchain hoàn chỉnh.
+
+**Root causes & fixes**:
+1. AI wrap content trong ` ```html ` code fence → strip bằng regex
+2. AI thêm `**\n` trước ` ``` ` → `getBlock()` thêm `replace(/^\s*\*{1,2}\s*\n/, '')` trước strip fence
+3. AI bắt đầu dòng title/meta bằng `**` → filter `meaningful()` loại dòng chỉ có `**`
+4. AI viết title 65-80c → manual `TITLE_FIX` dict cho 14 DM → 35-61c
+5. Hãng Bachmann (ID 672/673) không check "B&R" requirement → BACHMANN_IDS exception
+
+**Tests**: Layer 1: 5/5 PASS (node --check tất cả scripts) | Layer 2: 31/31 Clean (T/M/D/H2/UL/Agow/B&R đủ) | Layer 3: 31/31 applied WooCommerce + purge cache | Layer 4: N/A (new scripts)
+**Dependencies affected**: WooCommerce category pages (description + RankMath SEO title/meta), LiteSpeed cache purged
+**Notes**: Parser robustness: LABEL_RE positions approach (thay regex normalize) + meaningful() filter = chịu được mọi AI format variant. rawResponse lưu trong cache nên có thể reparse bất cứ lúc nào không cần API call lại.
+
+### 2026-04-04 — AI Rewrite Products 2025: Full Batch Complete + Audit 2021
+**Phase**: SEO Content Pipeline
+**Files changed**:
+- `workspaces/seo/self-improving/hot.md` — modified — Cập nhật commands table (thêm rewrite-product/apply-rewrite-product), script version log (ai-rewrite-product.js v2), Windows note (MSYS_NO_PATHCONV=1), kết quả verify mới
+- `progress.md` — modified — Mark done AI Rewrite 422 SP, thêm section Products 2021 tasks
+- `changelog.md` — modified — Entry này
+
+**Why**: (1) Hoàn thành toàn bộ AI rewrite cho 422 sản phẩm năm 2025 — title + short_desc + meta_desc đã lên WooCommerce, 0 lỗi. (2) Audit sản phẩm 2021 (133 SP viết tay): title OK hầu hết (5 ngắn), meta_desc OK toàn bộ, short_desc có 9 SP còn noise.
+
+**Key lessons**:
+- `MSYS_NO_PATHCONV=1` + `//home/...` bắt buộc khi chạy `docker exec` với Unix path trên Git Bash/Windows
+- 402 Insufficient Balance giữa chừng → `--resume` tiếp tục từ cache, không mất dữ liệu đã xử lý
+- applyFromCache() không filter theo issues → REVIEW items cũng được apply (đây là behavior đúng khi user đã confirm)
+- 133 SP năm 2021: title 128/133 OK, meta_desc 133/133 OK, chỉ 9 short_desc còn noise → ít việc hơn nhiều so với 2025
+
+**Tests**: Layer 1: ✅ | Layer 2: 422/422 applied 0 errors | Layer 3: verify spot-check 3858 PASS | Layer 4: N/A
+**Dependencies affected**: hot.md (session start context cập nhật), progress.md
+**Notes**: Bước tiếp: xử lý 133 SP 2021 — đơn giản hơn (chỉ 5 title + 9 short_desc). Cân nhắc AI rewrite toàn bộ luôn để đồng nhất chất lượng với 2025.
+
+---
+
+
+**Phase**: SEO Script Development
+**Files changed**:
+- `workspaces/seo/scripts/ai-rewrite-product.js` — **multiple fixes**:
+  1. Root cause: `"ĐẾM KÝ TỰ TRƯỚC KHI TRẢ LỜI"` → AI đếm ký tự inline, dùng hết 450 tokens → bị cắt trước `SHORT_DESC:` → parse fail. Fix: xóa instruction đếm, đơn giản hóa prompt, tách `SYSTEM_MSG` ra khỏi user message.
+  2. `maxTokens` 450→700: tiếng Việt ~2 tokens/từ, short_desc 300c cần ~500 tokens output.
+  3. Thêm `trimAtSentence(text, 300)` trong `parseAIResponse()`: auto-trim tại ranh giới câu nếu AI viết >300c.
+  4. `validate()`: relax title min 48→45c (48-49c cũng tốt về SEO), short max 320→305c (sau trim luôn ≤300c).
+  5. Bug fix: `process.argv.slice(3)` → `slice(2)` — `--apply` bị cắt ở index 2 nên không bao giờ enter APPLY_MODE.
+  6. Fix output hint: `apply-rewrite-desc` → `apply-rewrite-product` (đúng command name trong khoa.js).
+
+**Why**: Script đã build sẵn từ session trước nhưng mọi test đều fail "Không parse được response". Debug trực tiếp trong container phát hiện AI chain-of-thought đếm từng ký tự rồi bị cắt nửa chừng do maxTokens thấp.
+
+**Tests**: Layer 1: ✅ (node --check PASS) | Layer 2: ✅ (5/5 unit-style tests — ACOPOS/PLC/HMI/Safety/IPC đều OK) | Layer 3: ✅ (apply --id=5379 PASS, WC verify PASS, purge cache PASS) | Layer 4: ✅ (khoa.js unchanged, wp-client.js unchanged, claudible-client.js unchanged)
+**Dependencies affected**: ai-rewrite-product.js behavior change — từ 100% fail → 80-100% OK per batch
+**Notes**: Full run (374 products) ước tính 8 phút @ 1.3s/product + Anthropic API cost ~$0.04-0.08 (Sonnet). Dùng `--resume` để incremental.
+
+---
+
+### 2026-04-02 — Fix Citation Preservation: cleanNoise() + fix-long-desc.js v2
+**Phase**: Code Quality / SEO Strategy
+**Files changed**:
+- `workspaces/seo/scripts/fix-long-desc.js` — **v1→v2** — Bỏ rule xóa `(manual, trang X)` khỏi `cleanLongDescHtml()`. Bỏ detection `(manual, trang X)` khỏi `hasNoise()`. Thêm rule xóa phone/hotline/email. Cập nhật docstring: "GIỮ citation, chỉ strip metadata block + phone/email".
+- `workspaces/seo/scripts/ai-rewrite-desc.js` — **v1→v2** — `cleanNoise()`: xóa R1 (manual refs), R2 (datasheet refs), R3 (trang X độc lập). `SYSTEM_PROMPT`: sửa rule 5→6 mới: "GIỮ NGUYÊN mọi citation (data sheet, trang X) và (manual, trang X) — E-E-A-T signal".
+- `workspaces/seo/self-improving/hot.md` — **modified** — Script Version Log: fix-long-desc v2, ai-rewrite-desc v2. Thêm Critical Rule: "Citation preservation".
+- `workspaces/seo/self-improving/corrections.md` — **modified** — Thêm correction: Citation không phải noise, data 367/590 products, nguyên tắc B2B kỹ thuật.
+
+**Why**: 367/590 sản phẩm (62%) có citation `(data sheet/manual, trang X)` — E-E-A-T signal chứng minh nội dung từ tài liệu kỹ thuật B&R thật, không phải AI hallucination. Script v1 sai khi xóa chúng.
+
+**Tests**: Layer 1: 2/2 ✅ | Layer 2: 10/10 ✅ (cleanNoise + hasNoise unit tests) | Layer 3: PASS (5310: 29/29 citations intact, metadata xóa đúng) | Layer 4: PASS (khoa.js help intact)
+**Dependencies affected**: fix-long-desc.js, ai-rewrite-desc.js behavior change — ít products bị flag hơn, AI nhận input đầy đủ hơn
+**Notes**: Sau fix này, fix-long-desc dry-run sẽ báo ÍT hơn v1 — đó là đúng, 279 products trước đây bị flag sai vì có manual refs.
+
+---
+
+### 2026-04-02 — Fix export-dry-run.js: Full Text + Regex Bug
+**Phase**: 1a (Code Quality)
+**Files changed**:
+- `workspaces/seo/scripts/export-dry-run.js` — **modified** — (1) Tăng preview từ 300c → full plain text (stripHtml, không cắt). (2) Fix regex `[\d\-–]+` → `[^)]{1,60}` để bắt mọi dạng manual ref kể cả `trang 72, 85`, `trang 54, 72, 85`, edge case `trang 1 – tương thích dòng 8B0K`.
+- `workspaces/seo/scripts/fix-long-desc.js` — **modified** — Same regex fix cho `cleanLongDescHtml()`.
+- `workspaces/seo/scripts/fix-short-desc.js` — **modified** — Same regex fix cho `cleanLongDesc()`.
+
+**Why**: (1) User báo Cleaned_Long_Desc_Preview truncate — 300c chỉ ~9% content (p50=3455c). (2) Phát hiện bug: `[\d\-–]+` không bắt multi-page refs như `(manual, trang 72, 85)` hay edge case chữ. Kết quả: product 5379 có 28 refs nhưng chỉ 23 bị clean. Sau fix: 0/579 products còn `(manual...)` trong cleaned column.
+
+**Tests**: Layer 1: 3/3 PASS | Layer 2: 0/579 remaining refs ✅ | Layer 3: N/A | Layer 4: fix-long-desc + fix-short-desc synced
+**Notes**: Regex `[^)]{1,60}` safer hơn enumerate từng format — bắt tất cả nội dung trong ngoặc.
+
+---
+
+### 2026-04-02 — Content Pipeline Scripts: fix-short-desc + fix-long-desc + upgrade fix-meta-desc v3
+**Phase**: 1a (SEO Production Fix)
+**Files changed**:
+- `workspaces/seo/scripts/fix-short-desc.js` — **created** — Strip noise từ WC short_description: CTA generic (Liên hệ Agow/Tư vấn miễn phí), brand boilerplate, double-brand suffix. Detect CLEAN_ONLY (đủ tốt sau strip), THIN (80-99c), SHORT (<80c, rebuild từ long_desc). 590 products scanned: 577 CLEAN_ONLY, 5 THIN, 8 SHORT, 0 needsReview.
+- `workspaces/seo/scripts/fix-long-desc.js` — **created** — Strip noise từ WC long_description HTML: manual refs `(manual, trang N)`, metadata block (`Mã sản phẩm:`, `Thương hiệu:`, `Xuất xứ:`), standalone heading labels. Giữ nguyên HTML structure. 590 products scanned: 579 có noise, 11 sạch, 0 needsReview.
+- `workspaces/seo/scripts/fix-meta-desc.js` — **upgraded v2→v3** — Thêm: `cleanLongDescText()` strip manual refs + metadata; `extractSpecsFromText()` riêng; `extractNewSpecs()` với long_desc fallback; `splitSentencesSafe()` không cắt decimal (`0.1`, `115.2`); trim-check (extended <5c hơn gốc → needsManual); trailing-period fix trước nối; fetch thêm `description` field cho WC products.
+- `workspaces/seo/scripts/khoa.js` — **modified** — Thêm 4 commands: `check-short-desc`, `fix-short-desc`, `check-long-desc`, `fix-long-desc`. Cập nhật header, workflow. Total: 14 commands.
+- `workspaces/seo/self-improving/hot.md` — **modified** — Commands table 14 entries; Script Version Log thêm fix-short-desc v1, fix-long-desc v1, fix-meta-desc v3; Kết quả verify mới (391 meta issues, 577 short CLEAN_ONLY, 579 long noise).
+- `progress.md` — **modified** — Thêm content pipeline tasks, cập nhật Summary.
+- `changelog.md` — **modified** — This entry.
+
+**Why**: (1) `check-meta` tiết lộ 241/391 items `needsManual: true` vì short_desc không đủ spec để extend. Root cause: short_desc chứa CTA noise ("Liên hệ Agow...", "Tư vấn miễn phí!") → keyword extractor không tìm được thông tin mới. Fix đúng thứ tự: clean short/long_desc trước → meta-desc engine sẽ có data tốt hơn. (2) `fix-meta-desc.js` v2 có bug: decimal splitter cắt `0.1°C` thành `"01°C"` fragment; smartTrim cắt ngược về câu gốc → needsManual false nhưng proposed = current; double period khi base kết thúc `.`.
+
+**Tests**:
+- Layer 1: 3/3 PASS (`node --check` fix-short-desc, fix-long-desc, fix-meta-desc, khoa.js)
+- Layer 2: `khoa.js help` → 14 commands đúng | test product [5277] có 28 manual refs → detected và cleaned | [4545] RS232 → needsManual: true đúng (không có spec mới) | [4288] AT2402 → needsManual: true đúng
+- Layer 3: DEFERRED (--apply chưa chạy)
+- Layer 4: `fix-meta-desc.js` regression: check-meta vẫn scan posts/pages/products đúng; khoa.js cũ 10 commands → 14 commands backward-compatible
+
+**Dependencies affected**: fix-meta-desc phụ thuộc short+long_desc đã clean → nên chạy fix-short-desc + fix-long-desc trước fix-meta.
+**Notes**: Workflow chuẩn: `fix-short-desc --apply` → `fix-long-desc --apply` → `fix-meta --apply` → `purge-cache`. Pages (9 items) nên fix trước products (391 items) để test.
+
+---
+
+
 **Phase**: 1a (SEO Production Fix)
 **Files changed**:
 - `workspaces/seo/self-improving/hot.md` — **modified** — Cập nhật Verified Findings: LONG_TITLE 0 remaining, 8/8 fixed. SHORT_TITLE 9 system pages intentionally skipped.
