@@ -134,6 +134,23 @@ const COMMANDS = {
     desc: 'Purge LiteSpeed Cache sau khi fix xong',
     defaultArgs: [],
   },
+
+  // ── Blog Writer ──────────────────────────────────────────────────────────────
+  'research-blog': {
+    script: 'ai-write-blog.js',
+    desc: 'Research + outline topic hôm nay từ GSC (dry-run, không ghi WP)',
+    defaultArgs: [],
+  },
+  'write-blog': {
+    script: 'ai-write-blog.js',
+    desc: 'Viết bài + upload ảnh Unsplash + tạo draft WP. --topic="..." để chỉ định chủ đề',
+    defaultArgs: ['--write'],
+  },
+  'publish-blog': {
+    script: 'ai-write-blog.js',
+    desc: 'Publish hoặc xóa draft. --id=N --publish | --id=N --reject',
+    defaultArgs: [],
+  },
 };
 
 if (!command || command === 'help') {
@@ -161,6 +178,12 @@ if (!command || command === 'help') {
   console.log('  node khoa.js fix-missing-alt --apply    # 12. Sửa alt text');
   console.log('  node khoa.js verify                     # 13. Xác nhận alt');
   console.log('  node khoa.js purge-cache                # 14. Purge cache (sau mọi fix)');
+  console.log('\nBlog Writer:');
+  console.log('  node khoa.js research-blog                           # Research topic từ GSC (dry-run)');
+  console.log('  node khoa.js write-blog                              # Viết bài tự động hôm nay');
+  console.log('  node khoa.js write-blog -- --topic="chủ đề"         # Viết theo chủ đề cụ thể');
+  console.log('  node khoa.js publish-blog -- --id=123 --publish      # Publish draft ID 123');
+  console.log('  node khoa.js publish-blog -- --id=123 --reject       # Xóa draft ID 123');
   process.exit(0);
 }
 

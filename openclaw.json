@@ -180,6 +180,13 @@
       "skill": "wp-daily-check",
       "description": "Daily SEO health check at 6:00 AM"
     },
+    "dailyBlogWrite": {
+      "cron": "0 8 * * *",
+      "agent": "seo",
+      "skill": "wp-blog-writer",
+      "args": { "action": "auto-write" },
+      "description": "Auto-write 1 blog post daily at 8:00 AM ICT"
+    },
     "weeklyReport": {
       "cron": "0 8 * * 1",
       "agent": "lead",
