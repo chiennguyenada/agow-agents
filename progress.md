@@ -184,11 +184,44 @@
 - [x] **Purge cache** + verify 3/3 spot-check PASS — 2026-04-06
 - **Quality**: 14/14 short(200-300c) ✅ | 14/14 meta(140-160c) ✅ | 0 CTA ✅ | 0 noise ✅
 
+### Blog Writing — wp-blog-writer + wp-project-post — PRODUCTION 2026-04-16
+- [x] Tạo `ai-write-blog.js` — Phase 1-6 workflow: research → outline → write → images → draft → notify
+- [x] Tạo `gemini-client.js` — streaming Gemini API, drop-in thay claudible-client cho write phase
+- [x] Tạo `google-image-search.js` — SerpAPI Google Images wrapper
+- [x] Tạo `pick-image.js` — download ảnh đã chọn → upload WP Media → set featured image
+- [x] Tạo `workspaces/seo/skills/wp-blog-writer/SKILL.md` — đầy đủ workflow, triggers, error handling
+- [x] Tạo `workspaces/seo/skills/wp-project-post/SKILL.md` — case study workflow, câu hỏi mẫu theo task_type
+- [x] Thêm blog commands vào `khoa.js`: `research-blog`, `write-blog`, `publish-blog`, `pick-image`
+- [x] **MILESTONE: wp-project-post test thực tế PASS** — admin gửi Telegram → Khoa hỏi 4 câu → draft ID 5500 → lên lịch 18/04/2026 8:00 ✅ — 2026-04-16
+- [x] Update `hot.md` — blog commands table, Blog Writing Rules section
+- [x] Update SKILL.md cả 2 skills — status PRODUCTION, lessons learned
 
-- [ ] **Audit**: 133 SP năm 2021 — title 5 ngắn, short_desc 9 noise, meta_desc OK — 2026-04-04
-- [ ] Fix 5 title ngắn (<40c): IDs 3359, 2884, 3321, 3318, 3315
-- [ ] Fix 9 short_desc noise: IDs 3203, 3152, 3155, 3142, 2918, 2884, 2881, 2878, 2655
-- [ ] Xem xét AI rewrite toàn bộ 133 SP 2021 (viết tay, chất lượng thấp hơn 2025)
+### Blog Writer v2 — Outline + Gemini + Category fix — 2026-04-15
+- [x] `buildOutline()` — thêm `lsi_keywords` (4 LSI terms truyền vào write prompt) — 2026-04-15
+- [x] `buildOutline()` — thêm `word_target` (per type: comparison 1100, how-to 1350, v.v.) — 2026-04-15
+- [x] `buildOutline()` — thêm `required_sections` (comparison→table+FAQ, how-to→ol+FAQ, v.v.) — 2026-04-15
+- [x] `buildOutline()` — bỏ `meta_title` redundant, giảm maxTokens 4096→1024 — 2026-04-15
+- [x] `buildOutline()` — validate ≥4 headings, prompt yêu cầu focus_keyword không dấu phẩy — 2026-04-15
+- [x] `writeArticle()` — switch sang `geminiComplete` (tránh Claudible timeout 100s với 8192 tokens) — 2026-04-15
+- [x] `writeArticle()` — truyền lsi_keywords + word_target + required_sections vào user prompt — 2026-04-15
+- [x] `findOrCreateCategories()` — rewrite: fetch all cats → fuzzy word-overlap ≥60% → no dup — 2026-04-15
+- [x] `makeSlug()` — thêm full Vietnamese diacritic map ("so sánh"→"so-sanh") — 2026-04-15
+- [x] `searchAndPendImages()` — strip brand names trước SerpAPI (tránh ảnh logo/watermark) — 2026-04-15
+- [x] Test dry-run PASS: type, lsi, word_target, slug đúng — 2026-04-15
+- [x] Test fuzzy match: 7/7 cases PASS (kể cả "PLC & Lập trình" ↔ "Lập trình PLC" 100%) — 2026-04-15
+- [x] Test `--write` full run với Gemini — PASS 2026-04-15
+- [x] Test `pick-image` sau khi draft được tạo — PASS 2026-04-15
+
+### 133 SP năm 2021 — COMPLETED 2026-04-15
+- [x] Fix 5 title ngắn (<40c): IDs 3359, 2884, 3321, 3318, 3315 — 2026-04-15
+- [x] Fix 9 short_desc noise: IDs 3203, 3152, 3155, 3142, 2918, 2884, 2881, 2878, 2655 — 2026-04-15
+- [x] Xem xét AI rewrite toàn bộ 133 SP 2021 — đã thực hiện — 2026-04-15
+
+### Content Pipeline Apply — COMPLETED 2026-04-15
+- [x] `fix-short-desc --apply` — 590 products (577 clean noise + 13 thin/short) ✅ — 2026-04-15
+- [x] `fix-long-desc --apply` — 579 products ✅ — 2026-04-15
+- [x] `fix-meta --apply` — 9 pages + 391 products ✅ — 2026-04-15
+- [x] Purge cache sau apply — 2026-04-15
 - [x] Create `workspaces/seo/scripts/wp-client.js` — shared HTTP client, 100% env-based config — 2026-04-01
 - [x] Refactor `fix-missing-alt.js` — dùng wp-client, BRAND_NAME auto-detect từ domain — 2026-04-01
 - [x] Rewrite `verify-alt-fix.js` — scan toàn bộ site (không hardcode IDs), detect MISSING + DUPLICATE — 2026-04-01
@@ -343,10 +376,11 @@ Layer 4 (Regression):  PASS (Tong bot binding unchanged, Tong vẫn nhận @tong
 
 ## Phase 1f — Google Search Console (Week 9-10)
 
-- [ ] Register Google Search Console API
+- [x] Register Google Search Console API — service account setup + credentials trong .env — 2026-04-15
 - [x] Create skill for Khoa to query GSC data — `workspaces/seo/skills/wp-gsc/SKILL.md` — 2026-03-28
-- [-] Test: Keyword rankings retrieval — needs GSC credentials
-- [-] Test: SEO data feedback loop — needs running system
+- [x] GSC credentials trong .env (`GSC_CLIENT_EMAIL`, `GSC_PRIVATE_KEY`, `GSC_SITE_URL`) — 2026-04-15
+- [x] Test: Keyword rankings retrieval — PASS (dùng trong researchTopic() của ai-write-blog.js) — 2026-04-15
+- [x] Test: SEO data feedback loop — PASS (blog writer dùng GSC để chọn topic) — 2026-04-15
 
 ---
 
@@ -371,18 +405,6 @@ _Tasks to be defined when user provides business requirements_
 | 1f    | 4           | 1    | 2        | 0       | 1       |
 | **Total** | **107** | **84** | **22** | **0** | **2** |
 
-> **2026-04-02 UPDATE**: Content pipeline scripts hoàn chỉnh — 9 files, 14 commands.
-> Scripts mới: `fix-short-desc.js` (590 products, 577 CLEAN_ONLY + 13 THIN/SHORT), `fix-long-desc.js` (579/590 có noise).
-> `fix-meta-desc.js` upgrade v3: long_desc fallback, decimal-safe sentence splitter, trim-check.
+> **2026-04-15 UPDATE**: Blog Writer v2 PRODUCTION ✅ — outline (lsi_keywords, word_target, required_sections), Gemini write (no timeout), Vietnamese slug, category fuzzy match, SerpAPI image search. Test --write + pick-image PASS. GSC integration PASS. Content pipeline (fix-short/long-desc/meta) applied toàn bộ. 133 SP 2021 hoàn chỉnh.
 >
-> **SEO Fixes Done:**
-> - MISSING_ALT: 126/126 PASS ✅
-> - DUPLICATE_ALT: 3 trang đã fix ✅
-> - LONG_TITLE: 8/8 fixed ✅
-> - Meta desc posts: 0 issues ✅
->
-> **Pending (cần approval):**
-> 1. `fix-short-desc --apply` — 590 products (577 clean noise + 13 thin/short)
-> 2. `fix-long-desc --apply` — 579 products (manual refs + metadata block)
-> 3. `fix-meta --apply` — pages 9 items trước → products 391 items sau
-> 4. GSC API (Phase 1f)
+> **Phase 1a-1f: HOÀN THÀNH**

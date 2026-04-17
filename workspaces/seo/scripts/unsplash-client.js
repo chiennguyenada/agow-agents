@@ -89,8 +89,8 @@ function downloadBuffer(url) {
  * wp-client.js hardcode application/json nên cần custom multipart upload riêng.
  * @param {Buffer} buffer    — image data
  * @param {string} filename  — e.g. "plc-br-x20.jpg"
- * @param {string} caption   — e.g. "Photo by John Doe on Unsplash"
- * @param {string} altText   — alt text cho ảnh
+ * @param {string} caption   — short caption (Vietnamese, no attribution)
+ * @param {string} altText   — alt text specific to article context
  * @returns {Promise<{id, url, caption}|null>}
  */
 function uploadToWPMedia(buffer, filename, caption, altText) {
@@ -142,7 +142,7 @@ function uploadToWPMedia(buffer, filename, caption, altText) {
         try {
           const r = JSON.parse(data);
           if (res.statusCode < 300 && r.id) {
-            resolve({ id: r.id, url: r.source_url, caption });
+            resolve({ id: r.id, url: r.source_url, caption, altText });
           } else {
             console.error(`  ❌ WP Media upload failed: ${res.statusCode} — ${data.slice(0, 200)}`);
             resolve(null);
@@ -164,9 +164,11 @@ function uploadToWPMedia(buffer, filename, caption, altText) {
  * @param {string} query   — topic keyword để search Unsplash
  * @param {string} slug    — dùng làm filename prefix (e.g. "plc-br-x20")
  * @param {number} count   — số ảnh cần (default 2: 1 featured + 1 inline)
+ * @param {Function} [altTextFn]  — optional fn(photo, index) → string, để caller tự đặt alt text theo context bài viết
+ * @param {Function} [captionFn] — optional fn(photo, index) → string, để caller tự đặt caption
  * @returns {Promise<Array<{id, url, caption}>>}
  */
-async function findAndUpload(query, slug, count = 2) {
+async function findAndUpload(query, slug, count = 2, altTextFn = null, captionFn = null) {
   // Unsplash search tốt hơn với tiếng Anh
   const englishQuery = query; // caller nên truyền English keyword
   const photos = await searchPhotos(englishQuery, count);
@@ -180,8 +182,9 @@ async function findAndUpload(query, slug, count = 2) {
   for (let i = 0; i < photos.length; i++) {
     const photo    = photos[i];
     const filename = `${slug}-${i + 1}.jpg`;
-    const caption  = `Photo by <a href="${photo.profileUrl}?utm_source=agow_automation&utm_medium=referral">${photo.photographer}</a> on <a href="https://unsplash.com/?utm_source=agow_automation&utm_medium=referral">Unsplash</a>`;
-    const altText  = photo.altDescription || query;
+    // No Unsplash attribution — Unsplash license permits commercial use without credit
+    const caption  = captionFn ? captionFn(photo, i) : '';
+    const altText  = altTextFn ? altTextFn(photo, i) : (photo.altDescription || query);
 
     process.stderr.write(`  📷 Downloading: ${photo.downloadUrl?.slice(0, 60)}...\n`);
     const buffer = await downloadBuffer(photo.downloadUrl);

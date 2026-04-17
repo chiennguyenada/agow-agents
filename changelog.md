@@ -6,6 +6,55 @@
 
 ---
 
+### 2026-04-15 — Blog Writer v2: Outline cải thiện + Gemini write + Category fuzzy match
+**Phase**: Phase 1g (Blog Writing)
+**Files changed**:
+- `workspaces/seo/scripts/ai-write-blog.js` — modified — 5 cải thiện:
+  1. `buildOutline()`: thêm `lsi_keywords` (4 LSI terms), `word_target` (per type), `required_sections` (cấu trúc bắt buộc theo type), xóa `meta_title` redundant, giảm maxTokens 4096→1024, validate ≥4 headings
+  2. `writeArticle()`: đổi sang `geminiComplete` (tránh Claudible timeout với 8192 tokens), truyền lsi_keywords + word_target + required_sections vào prompt
+  3. `findOrCreateCategories()`: rewrite hoàn toàn — fetch all categories 1 lần, fuzzy word-overlap ≥60% (normalize dấu + sort words), tránh tạo category trùng
+  4. `makeSlug()`: thêm Vietnamese diacritic map đầy đủ — "so sánh" → "so-sanh" thay vì "so-snh"
+  5. `searchAndPendImages()`: strip brand names (B&R, Bachmann) trước khi gửi SerpAPI — tránh ảnh logo/watermark
+- `workspaces/seo/scripts/ai-write-blog.js` — new imports: `geminiComplete` từ gemini-client (riêng cho write phase), `chatComplete` từ claudible-client (giữ cho outline phase)
+
+**Why**:
+1. Outline cũ: `focus_keyword` bị dấu phẩy (2 keyword), `meta_title` không được dùng, maxTokens 4096 lãng phí, AI không biết cần bao nhiêu từ/section, không biết cấu trúc bắt buộc theo type
+2. `writeArticle` dùng Claudible với maxTokens 8192 → timeout 100s Cloudflare proxy chắc chắn xảy ra
+3. Category: AI gợi ý "PLC & Lập trình" → WP không tìm được "Lập trình PLC" do word order → tạo mới trùng (đã có 3 dup sau 1 lần test)
+4. Slug: tiếng Việt bị drop hoàn toàn → URL không readable
+5. Image query: AI thêm "B&R" → SerpAPI trả về ảnh logo/press kit thay vì ảnh kỹ thuật thực tế
+
+**Tests**: Layer 1: `node --check` PASS ✅ | Layer 2: dry-run test PASS (type, lsi, word_target, slug đúng) | Layer 3: fuzzy match test 7/7 cases PASS ✅ | Layer 4: claudible-client usage (outline) không đổi
+**Dependencies affected**: ai-write-blog.js behavior (outline richer, write phase dùng Gemini), category matching behavior thay đổi hoàn toàn
+
+---
+
+
+**Phase**: Phase 1g (Blog Writing & Content Automation)
+**Files changed**:
+- `workspaces/seo/skills/wp-blog-writer/SKILL.md` — rewritten — cập nhật status PRODUCTION, đổi image source từ Unsplash → SerpAPI, thêm pick-image flow, thêm SCHEDULE command, cập nhật AI model (Gemini write phase), cost mới ($0.01–0.02/bài)
+- `workspaces/seo/skills/wp-project-post/SKILL.md` — modified — thêm status PRODUCTION + test result, thêm lessons learned (tên nhà máy, lên lịch, docker force-recreate), cập nhật "Lưu ý quan trọng"
+- `workspaces/seo/self-improving/hot.md` — modified — thêm blog writing commands (research-blog, write-blog, publish-blog, pick-image), thêm "Blog Writing Rules" section với lessons từ production test
+- `workspaces/seo/scripts/ai-write-blog.js` — modified — `buildOutline()` cải thiện: thêm `lsi_keywords`, `word_target`, `required_sections`, bỏ `meta_title` redundant, tối ưu `maxTokens` 4096→1024; `writeArticle()` nhận thêm context từ outline
+- `CLAUDE.md` — modified — thêm Blog Writing section vào WordPress & WooCommerce rules
+- `progress.md` — modified — thêm section Blog Writing Production milestone
+- `C:\Users\chiennguyen\.claude\projects\...\memory\` — updated — thêm memory về blog writing production
+
+**Why**: Test thực tế trên Telegram 2026-04-16: admin gửi "@AgowKhoaBot vừa hoàn thành sửa PLC X20CP3585 cho nhà máy bia. hãy lên bài viết tin tức" → Khoa hỏi 4 câu → admin trả lời + gửi ảnh → Khoa tạo draft ID 5500 trong 6 phút → admin review → lên lịch 18/04/2026 8:00 → thành công. Toàn bộ workflow hoạt động end-to-end.
+
+**Tests**: Layer 1: syntax OK ✅ | Layer 2: production test PASS ✅ (draft 5500 created, scheduled) | Layer 3: end-to-end Telegram workflow PASS ✅ | Layer 4: khoa.js + wp-client.js không thay đổi
+
+**Key lessons từ production**:
+1. Gemini `gemini-3-flash-preview` streaming: không bị timeout proxy Cloudflare — phù hợp write phase
+2. `docker compose restart` KHÔNG reload env vars — phải dùng `--force-recreate`
+3. Tên nhà máy nhạy cảm — Khoa hỏi trước, không tự điền; nếu không có dùng "nhà máy [ngành] [vùng]"
+4. Lên lịch WP: `status: "future"` + `date: "YYYY-MM-DDTHH:MM:SS"` (giờ VN UTC+7, WP tự convert)
+5. `buildOutline()` cải thiện: thêm `lsi_keywords` + `required_sections` → bài viết có cấu trúc tốt hơn
+
+**Dependencies affected**: ai-write-blog.js behavior (outline richer, write phase nhận nhiều context hơn), SKILL.md ảnh hưởng Khoa session start context
+
+---
+
 ### 2026-04-06 — Hotline Replace: 028 6670 9931 → 0934 795 982 (47 items)
 **Phase**: SEO Content
 **Files changed**:

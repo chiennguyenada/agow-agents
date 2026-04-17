@@ -222,3 +222,9 @@ Thay đổi self-improving được commit vào git — có thể `git revert` n
 - WordPress API key giới hạn scope: Posts + Media only
 - Agents chỉ tạo DRAFT, không publish trực tiếp
 - Không sửa `robots.txt`, `.htaccess`, sitemap mà không có approval flow
+
+## Khi chạy section mới
+- Copy dòng này vào cli: Đọc lại CLAUDE.md plan.md progress.md changelog.md và tiếp tục
+
+## TK email gemini
+- christ.nguyen.au@gmail.com

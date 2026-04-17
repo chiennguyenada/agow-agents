@@ -10,6 +10,9 @@ backups/
 **/backups/
 **/cache/
 **/reports/
+**/pending-images/
+**/node_modules/
+**/package-lock.json
 *.db
 *.db-journal
 *.sqlite

@@ -135,7 +135,12 @@ const COMMANDS = {
     defaultArgs: [],
   },
 
-  // ── Blog Writer ──────────────────────────────────────────────────────────────
+  // ── Project / Case Study Posts ───────────────────────────────────────────────
+  'write-project': {
+    script: 'write-project-post.js',
+    desc: 'Viết bài case study dự án. --info=\'{...}\' | --info-file=path.json [--img-ids=ID1,ID2] [--schedule=YYYY-MM-DD]',
+    defaultArgs: [],
+  },
   'research-blog': {
     script: 'ai-write-blog.js',
     desc: 'Research + outline topic hôm nay từ GSC (dry-run, không ghi WP)',
@@ -150,6 +155,26 @@ const COMMANDS = {
     script: 'ai-write-blog.js',
     desc: 'Publish hoặc xóa draft. --id=N --publish | --id=N --reject',
     defaultArgs: [],
+  },
+  'schedule-blog': {
+    script: 'ai-write-blog.js',
+    desc: 'Lên lịch đăng bài. --id=N --schedule --date=YYYY-MM-DD (mặc định 08:00 sáng)',
+    defaultArgs: ['--schedule'],
+  },
+  'pick-image': {
+    script: 'pick-image.js',
+    desc: 'Chèn ảnh đã chọn vào draft. --id=N --img1=1 --img2=1',
+    defaultArgs: [],
+  },
+  'schedule-post': {
+    script: 'schedule-post.js',
+    desc: 'Lên lịch đăng bài (tối đa 2 bài/ngày, slot 8:00 & 14:00). --id=N [--from=YYYY-MM-DD]',
+    defaultArgs: [],
+  },
+  'check-schedule': {
+    script: 'schedule-post.js',
+    desc: 'Xem lịch đăng bài 7 ngày tới (không schedule)',
+    defaultArgs: ['--check'],
   },
 };
 
@@ -184,6 +209,10 @@ if (!command || command === 'help') {
   console.log('  node khoa.js write-blog -- --topic="chủ đề"         # Viết theo chủ đề cụ thể');
   console.log('  node khoa.js publish-blog -- --id=123 --publish      # Publish draft ID 123');
   console.log('  node khoa.js publish-blog -- --id=123 --reject       # Xóa draft ID 123');
+  console.log('\nLên lịch đăng bài (tối đa 2 bài/ngày):');
+  console.log('  node khoa.js check-schedule                          # Xem lịch 7 ngày tới');
+  console.log('  node khoa.js schedule-post -- --id=123               # Lên lịch bài 123 (tìm slot tự động)');
+  console.log('  node khoa.js schedule-post -- --id=123 --from=2026-04-20  # Lên lịch từ ngày chỉ định');
   process.exit(0);
 }
 

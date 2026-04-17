@@ -61,7 +61,20 @@
 | `rewrite-desc` | AI viết lại long description |
 | `apply-rewrite-desc` | Apply long desc rewrite |
 | `ai-rewrite-category` | AI rewrite WC category description + SEO title/meta |
+| `research-blog` | Research topic từ GSC + tạo outline (dry-run, không ghi WP) |
+| `write-blog` | Viết bài + tìm ảnh SerpAPI + tạo draft WP |
+| `publish-blog` | Publish hoặc xóa draft (`--id=N --publish` / `--id=N --reject`) |
+| `pick-image` | Gán ảnh đã chọn vào draft (`--id=N --img=1-10`) |
 | `help` | Xem tất cả commands |
+
+## Blog Writing Rules (learned 2026-04-16)
+- **AI model**: Gemini `gemini-3-flash-preview` (streaming, no proxy timeout) — dùng cho WRITE phase
+- **Outline phase**: Claudible/Haiku — nhanh, output nhỏ, không cần Gemini
+- **wp-blog-writer**: viết bài SEO chung từ topic pool / GSC — SerpAPI tìm ảnh, user pick-image sau
+- **wp-project-post**: viết bài case study dự án — ảnh do admin cung cấp qua Telegram (KHÔNG dùng SerpAPI)
+- **Lên lịch đăng**: dùng WP REST API `date` field (ISO 8601, UTC+7) — `PUT /wp-json/wp/v2/posts/{id}` với `{"date": "2026-04-18T08:00:00", "status": "future"}`
+- **Image từ Telegram**: lấy `file_id` → `getFile` → download → upload WP Media multipart
+- **docker compose restart** KHÔNG reload env vars — phải dùng `docker compose up -d --force-recreate`
 
 ## Baseline Metrics (2026-04-02)
 - Total products: 590 (422 năm 2025 đã AI rewrite, 133 năm 2021 cần xử lý, 35 khác)

@@ -53,6 +53,15 @@
 - GSC domain format: `sc-domain:agowautomation.com` (no www, no https://)
 - PageBuilder strips H1 tags: Need PHP filter to inject H1 back
 - SEO scoring: 13 issue codes, score 0-100, threshold <70 = needs fix (see plan.md §13)
+- **Lên lịch đăng**: `PUT /wp-json/wp/v2/posts/{id}` với `{"status":"future","date":"YYYY-MM-DDTHH:MM:SS"}` — giờ VN (UTC+7)
+- **docker compose restart** KHÔNG reload env vars mới — phải dùng `docker compose up -d --force-recreate`
+
+### Blog Writing (production since 2026-04-16)
+- **wp-blog-writer**: topic từ GSC/pool → outline (Claudible/Haiku) → viết bài (Gemini streaming) → SerpAPI ảnh → WP draft
+- **wp-project-post**: case study từ admin Telegram → hỏi thông tin → Gemini viết → WP draft; ảnh do admin cung cấp (KHÔNG dùng SerpAPI)
+- AI model cho viết bài: Gemini `gemini-3-flash-preview` streaming (không bị Cloudflare proxy timeout)
+- Image: SerpAPI Google Images cho blog thông thường; Telegram photos cho case study
+- Workflow ảnh: SerpAPI → lưu pending-images/{id}.json → user pick → pick-image.js download+upload WP
 
 ### Existing Project Reference
 - Previous SEO audit project: `28-auditwebagow/` (production since 2026-03-24)

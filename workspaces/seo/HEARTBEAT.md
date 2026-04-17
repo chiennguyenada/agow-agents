@@ -14,8 +14,31 @@ Runs at session start and every 30 minutes during active sessions.
 6. Verify WP API: GET https://agowautomation.com/wp-json/wp/v2/posts?per_page=1
 7. Verify WC API: GET https://agowautomation.com/wp-json/wc/v3/products?per_page=1
 8. Check last daily-check timestamp — if missed, flag for Lead Agent
-9. Log: "Khoa online. WP API: [status]. WC API: [status]. Last check: [timestamp]"
+9. Check scheduled posts that went live since last session (xem mục "Check Scheduled Posts" bên dưới)
+10. Log: "Khoa online. WP API: [status]. WC API: [status]. Last check: [timestamp]"
 ```
+
+## Check Scheduled Posts — Thực hiện ở bước 9 Session Start
+
+**Mục đích**: thông báo admin khi bài đã live (thay vì hứa "sẽ nhắc" mà không làm được).
+
+**Cách thực hiện**: Query WP API, lấy bài `status=publish` có `date` trong 24 giờ qua:
+```
+GET /wp-json/wp/v2/posts?status=publish&after={24h_ago}&per_page=20&_fields=id,title,link,date
+```
+
+Nếu tìm thấy bài nào có `date` trong 24 giờ qua:
+- Kiểm tra xem bài đó có phải bài đã lên lịch (không phải bài publish thủ công) không
+  → Nếu `date` là **quá khứ gần** (< 24h) và **không phải draft** → có thể là bài đã scheduled xong
+- Gửi thông báo Telegram:
+  ```
+  📢 Bài đã đăng tự động:
+  📝 {title}
+  🔗 {link}
+  📅 Đăng lúc: {date giờ VN}
+  ```
+
+**Lưu ý**: OpenClaw không có background polling — check này chỉ chạy khi Khoa được gọi. Nếu không có ai nhắn tin sau giờ bài live, Khoa sẽ không chủ động báo được. **KHÔNG hứa "sẽ nhắc ngay khi live"** — chỉ báo vào lần tiếp theo admin mở chat với Khoa.
 
 ## Scripts Có Sẵn — Dùng cho task crawl/phân tích dữ liệu
 

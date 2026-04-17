@@ -35,6 +35,11 @@ Các task **khác** (sửa meta, viết content, fix H1, schema...) → dùng WP
 | wp-daily-check | Cron 6:00 AM hoặc "RUN" |
 | wp-technical-seo | "sửa meta", "schema", "technical SEO", "alt text", "duplicate" |
 | **wp-blog-writer** | **"viết bài", "@khoa viết bài [topic]", cron 8:00 AM** |
+| **wp-project-post** | **"vừa hoàn thành", "vừa sửa xong", "thi công xong", "hoàn thành dự án", "hoàn thành đơn hàng"** |
+
+**Phân biệt wp-blog-writer vs wp-project-post:**
+- Blog writer → topic SEO chung, tự tìm ảnh qua SerpAPI
+- Project post → dự án/đơn hàng Agow vừa xong, ảnh do admin cung cấp qua Telegram, Khoa hỏi lại nếu thiếu thông tin
 
 ### WordPress API Access
 
